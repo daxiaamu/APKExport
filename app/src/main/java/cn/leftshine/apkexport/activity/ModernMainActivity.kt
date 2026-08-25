@@ -98,13 +98,16 @@ import androidx.compose.material.icons.automirrored.outlined.HelpOutline
 import androidx.compose.material.icons.automirrored.outlined.OpenInNew
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.ListItem
+import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Switch
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Snackbar
 import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.Snackbar
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -167,12 +170,18 @@ import java.io.File
 import java.io.FileInputStream
 import java.text.Collator
 import java.util.Locale
+import java.util.concurrent.atomic.AtomicInteger
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.Semaphore
+import kotlinx.coroutines.sync.withPermit
 import kotlinx.coroutines.withContext
 
 class ModernMainActivity : ComponentActivity() {
@@ -265,6 +274,21 @@ internal class MainViewModel(application: Application) : AndroidViewModel(applic
         } finally {
             mutableState.value = mutableState.value.copy(exportingPackage = null)
         }
+    }
+    suspend fun exportBatch(
+        apps: List<InstalledApp>,
+        parallelism: Int = 3,
+        onProgress: (completed: Int) -> Unit,
+    ): List<Result<ExportedApk>> = coroutineScope {
+        val semaphore = Semaphore(parallelism.coerceAtLeast(1))
+        val completed = AtomicInteger(0)
+        apps.map { app ->
+            async(Dispatchers.IO) {
+                val result = semaphore.withPermit { runCatching { repository.export(app) } }
+                onProgress(completed.incrementAndGet())
+                result
+            }
+        }.awaitAll()
     }
 }
 
@@ -495,6 +519,11 @@ private fun ApkExportApp(initialDestination: MainDestination, viewModel: MainVie
     var pendingFileName by remember { mutableStateOf<String?>(null) }
     var pendingShare by remember { mutableStateOf(false) }
     var pendingBatchShare by remember { mutableStateOf(emptyList<InstalledApp>()) }
+    var pendingBatchExport by remember { mutableStateOf(emptyList<InstalledApp>()) }
+    var batchExportTotal by remember { mutableStateOf(0) }
+    var batchExportCompleted by remember { mutableStateOf(0) }
+    var batchExportFailures by remember { mutableStateOf(0) }
+    var batchExportRunning by remember { mutableStateOf(false) }
     val snackbar = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
     LaunchedEffect(Unit) {
@@ -532,6 +561,27 @@ private fun ApkExportApp(initialDestination: MainDestination, viewModel: MainVie
         }
     }
 
+    suspend fun exportAll(apps: List<InstalledApp>) {
+        if (apps.isEmpty() || batchExportRunning) return
+        batchExportTotal = apps.size
+        batchExportCompleted = 0
+        batchExportFailures = 0
+        batchExportRunning = true
+        val results = viewModel.exportBatch(apps) { completed ->
+            batchExportCompleted = completed
+        }
+        batchExportFailures = results.count { it.isFailure }
+        batchExportRunning = false
+        snackbar.showSnackbar(
+            resources.getString(
+                R.string.modern_batch_export_result,
+                batchExportTotal - batchExportFailures,
+                batchExportTotal,
+                batchExportFailures,
+            ),
+        )
+    }
+
     suspend fun exportAndShareAll(apps: List<InstalledApp>) {
         val exported = apps.mapNotNull { app -> viewModel.export(app).getOrNull() }
         if (exported.isNotEmpty()) shareApks(context, exported)
@@ -540,12 +590,16 @@ private fun ApkExportApp(initialDestination: MainDestination, viewModel: MainVie
     val permissionLauncher = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
         val app = pendingApp
         val batch = pendingBatchShare
+        val exportBatch = pendingBatchExport
         val requestedFileName = pendingFileName
         val share = pendingShare
         pendingApp = null
         pendingFileName = null
         pendingBatchShare = emptyList()
-        if (granted && batch.isNotEmpty()) {
+        pendingBatchExport = emptyList()
+        if (granted && exportBatch.isNotEmpty()) {
+            scope.launch { exportAll(exportBatch) }
+        } else if (granted && batch.isNotEmpty()) {
             scope.launch { exportAndShareAll(batch) }
         } else if (granted && app != null) {
             scope.launch {
@@ -569,6 +623,12 @@ private fun ApkExportApp(initialDestination: MainDestination, viewModel: MainVie
     val requestCustomExport: (InstalledApp, String) -> Unit = { app, name -> requestAction(app, name, false) }
     val requestShare: (InstalledApp) -> Unit = { requestAction(it, null, true) }
     val requestCustomShare: (InstalledApp, String) -> Unit = { app, name -> requestAction(app, name, true) }
+    val requestBatchExport: (List<InstalledApp>) -> Unit = { apps ->
+        if (Build.VERSION.SDK_INT <= 28 && ContextCompat.checkSelfPermission(context, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+            pendingBatchExport = apps
+            permissionLauncher.launch(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+        } else scope.launch { exportAll(apps) }
+    }
     val requestBatchShare: (List<InstalledApp>) -> Unit = { apps ->
         if (Build.VERSION.SDK_INT <= 28 && ContextCompat.checkSelfPermission(context, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
             pendingBatchShare = apps
@@ -603,12 +663,29 @@ private fun ApkExportApp(initialDestination: MainDestination, viewModel: MainVie
             onShare = requestShare,
             onCustomShare = requestCustomShare,
             onBatchShare = requestBatchShare,
+            onBatchExport = requestBatchExport,
             onCheckUpdate = AppUpdateManager::manualCheck,
             onHelp = { context.startActivity(Intent(Intent.ACTION_VIEW, "https://daxiaamu.github.io/APKExport/help/index.html".toUri())) },
             onBatchInstaller = { context.startActivity(Intent(Intent.ACTION_VIEW, "https://optool.daxiaamu.com/super_adb".toUri())) },
             onOriginalProject = { context.startActivity(Intent(Intent.ACTION_VIEW, "https://github.com/leftshine/APKExport".toUri())) },
             onMaintainerProject = { context.startActivity(Intent(Intent.ACTION_VIEW, "https://github.com/daxiaamu/APKExport".toUri())) },
         )
+        if (batchExportRunning) {
+            AlertDialog(
+                onDismissRequest = {},
+                title = { Text(stringResource(R.string.modern_batch_export)) },
+                text = {
+                    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                        Text(stringResource(R.string.modern_batch_export_progress, batchExportCompleted, batchExportTotal))
+                        LinearProgressIndicator(
+                            progress = { if (batchExportTotal == 0) 0f else batchExportCompleted.toFloat() / batchExportTotal },
+                            modifier = Modifier.fillMaxWidth(),
+                        )
+                    }
+                },
+                confirmButton = {},
+            )
+        }
         UpdateDialogHost()
     }
 }
@@ -662,6 +739,7 @@ private fun MainScreen(
     onShare: (InstalledApp) -> Unit,
     onCustomShare: (InstalledApp, String) -> Unit,
     onBatchShare: (List<InstalledApp>) -> Unit,
+    onBatchExport: (List<InstalledApp>) -> Unit,
     onCheckUpdate: () -> Unit,
     onHelp: () -> Unit,
     onBatchInstaller: () -> Unit,
@@ -773,7 +851,18 @@ private fun MainScreen(
                 keyboardController?.hide()
             })
         },
-        snackbarHost = { SnackbarHost(snackbar) },
+        snackbarHost = {
+            SnackbarHost(snackbar) { data ->
+                Snackbar(
+                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
+                ) {
+                    Text(
+                        text = data.visuals.message,
+                        modifier = Modifier.padding(vertical = 8.dp),
+                    )
+                }
+            }
+        },
         topBar = {
             Column(Modifier.fillMaxWidth().background(MaterialTheme.colorScheme.background)) {
             Spacer(Modifier.height(statusBarHeight))
@@ -794,7 +883,7 @@ private fun MainScreen(
                             selectedPackages = if (selectedPackages.size == visibleApps.size) emptySet() else visibleApps.mapTo(mutableSetOf()) { it.packageName }
                         }) { Icon(Icons.Outlined.DoneAll, stringResource(R.string.modern_select_all)) }
                         IconButton(onClick = { onBatchShare(selectedApps) }, enabled = selectedApps.isNotEmpty()) { Icon(Icons.Outlined.Share, stringResource(R.string.modern_batch_share)) }
-                        IconButton(onClick = { selectedApps.forEach(onExport) }, enabled = selectedApps.isNotEmpty()) { Icon(Icons.Outlined.Archive, stringResource(R.string.modern_batch_export)) }
+                        IconButton(onClick = { onBatchExport(selectedApps) }, enabled = selectedApps.isNotEmpty()) { Icon(Icons.Outlined.Archive, stringResource(R.string.modern_batch_export)) }
                         IconButton(onClick = { multiSelectMode = false; selectedPackages = emptySet() }) { Icon(Icons.Outlined.Close, stringResource(R.string.modern_exit_multi_select)) }
                     } else if (destination == MainDestination.EXPORT) {
                         IconButton(onClick = { showSortDialog = true }) { Icon(Icons.AutoMirrored.Outlined.Sort, stringResource(R.string.modern_sort)) }
