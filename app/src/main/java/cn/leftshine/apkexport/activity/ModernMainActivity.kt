@@ -72,7 +72,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Archive
 import androidx.compose.material.icons.outlined.Checklist
 import androidx.compose.material.icons.outlined.DoneAll
-import androidx.compose.material.icons.automirrored.outlined.Sort
+import androidx.compose.material.icons.outlined.SortByAlpha
 import androidx.compose.material.icons.outlined.Close
 import androidx.compose.material.icons.outlined.DarkMode
 import androidx.compose.material.icons.outlined.Delete
@@ -676,7 +676,14 @@ private fun ApkExportApp(initialDestination: MainDestination, viewModel: MainVie
                 title = { Text(stringResource(R.string.modern_batch_export)) },
                 text = {
                     Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                        Text(stringResource(R.string.modern_batch_export_progress, batchExportCompleted, batchExportTotal))
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                        ) {
+                            Text(stringResource(R.string.modern_batch_export_progress, batchExportCompleted, batchExportTotal))
+                            val percent = if (batchExportTotal == 0) 0 else batchExportCompleted * 100 / batchExportTotal
+                            Text(stringResource(R.string.modern_progress_percent, percent))
+                        }
                         LinearProgressIndicator(
                             progress = { if (batchExportTotal == 0) 0f else batchExportCompleted.toFloat() / batchExportTotal },
                             modifier = Modifier.fillMaxWidth(),
@@ -886,7 +893,7 @@ private fun MainScreen(
                         IconButton(onClick = { onBatchExport(selectedApps) }, enabled = selectedApps.isNotEmpty()) { Icon(Icons.Outlined.Archive, stringResource(R.string.modern_batch_export)) }
                         IconButton(onClick = { multiSelectMode = false; selectedPackages = emptySet() }) { Icon(Icons.Outlined.Close, stringResource(R.string.modern_exit_multi_select)) }
                     } else if (destination == MainDestination.EXPORT) {
-                        IconButton(onClick = { showSortDialog = true }) { Icon(Icons.AutoMirrored.Outlined.Sort, stringResource(R.string.modern_sort)) }
+                        IconButton(onClick = { showSortDialog = true }) { Icon(Icons.Outlined.SortByAlpha, stringResource(R.string.modern_sort)) }
                         IconButton(onClick = { multiSelectMode = true }) { Icon(Icons.Outlined.Checklist, stringResource(R.string.modern_multi_select)) }
                         IconButton(onClick = onRefresh) { Icon(Icons.Outlined.Refresh, stringResource(R.string.modern_refresh)) }
                     }

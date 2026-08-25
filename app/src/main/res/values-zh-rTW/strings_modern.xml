@@ -12,5 +12,6 @@
 <string name="modern_app_info_failed">無法識別來源應用程式</string>
 <string name="modern_export_and_share">匯出並分享</string>
 <string name="modern_batch_export_progress">正在匯出 %1$d/%2$d</string>
+<string name="modern_progress_percent">%1$d%%</string>
 <string name="modern_batch_export_result">已匯出 %1$d/%2$d 個應用程式，%3$d 個失敗</string>
 </resources>

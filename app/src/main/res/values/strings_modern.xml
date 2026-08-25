@@ -12,5 +12,6 @@
 <string name="modern_app_info_failed">Could not identify the source app</string>
 <string name="modern_export_and_share">Export and share</string>
 <string name="modern_batch_export_progress">Exporting %1$d of %2$d</string>
+<string name="modern_progress_percent">%1$d%%</string>
 <string name="modern_batch_export_result">Exported %1$d of %2$d apps; %3$d failed</string>
 </resources>
