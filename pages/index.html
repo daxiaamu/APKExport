@@ -16,18 +16,16 @@
     h1{font-size:clamp(46px,8vw,88px);line-height:.94;letter-spacing:-.065em;margin:18px 0 28px;max-width:780px}
     .lead{font-size:clamp(18px,2vw,22px);color:var(--muted);max-width:650px;margin:0 0 34px}
     .actions{display:flex;gap:12px;flex-wrap:wrap}.button{display:inline-flex;align-items:center;justify-content:center;min-height:46px;padding:0 20px;border:1px solid var(--line);border-radius:12px;background:var(--surface);font-weight:700;text-decoration:none;transition:.16s ease}.button.primary{background:var(--brand);border-color:var(--brand);color:white}.button:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(23,107,58,.12)}.button:focus-visible{outline:3px solid #8ed69b;outline-offset:3px}
-    .package{position:relative;display:grid;place-items:center;min-height:390px;perspective:900px;isolation:isolate}.package img{display:block;width:min(78%,280px);height:auto;border-radius:22%;transform:translate3d(var(--icon-x,0),var(--icon-y,0),0) rotateX(var(--icon-rx,0deg)) rotateY(var(--icon-ry,0deg));transform-style:preserve-3d;will-change:transform;filter:drop-shadow(0 18px 24px rgba(23,107,58,.16));transition:transform .2s cubic-bezier(.2,.8,.2,1),filter .2s;z-index:2}.package:hover img{filter:drop-shadow(0 24px 30px rgba(23,107,58,.22))}.package-format{position:absolute;display:grid;place-items:center;min-width:58px;height:34px;padding:0 11px;border:1px solid rgba(23,107,58,.2);border-radius:10px;background:rgba(255,255,255,.82);color:var(--brand);font:800 12px ui-monospace,SFMono-Regular,Consolas,monospace;letter-spacing:.04em;box-shadow:0 8px 24px rgba(23,107,58,.09);backdrop-filter:blur(8px);transform:translate3d(var(--tag-x,0),var(--tag-y,0),0) rotate(var(--tag-r,var(--base-r,0deg)));will-change:transform;transition:transform .24s cubic-bezier(.2,.8,.2,1),background .2s,border-color .2s;z-index:3}.package:hover .package-format{background:rgba(255,255,255,.94);border-color:rgba(23,107,58,.34)}.package-format:nth-of-type(1){left:0;top:17%;--base-r:-7deg}.package-format:nth-of-type(2){right:-2%;top:25%;--base-r:6deg}.package-format:nth-of-type(3){left:-3%;bottom:19%;--base-r:5deg}.package-format:nth-of-type(4){right:1%;bottom:13%;--base-r:-6deg}
-    .package-format{z-index:1}
-    .package-orbit,.package-trace{position:absolute;pointer-events:none;transform:translate3d(var(--decor-x,0),var(--decor-y,0),0) rotate(calc(var(--base-angle,0deg) + var(--decor-r,0deg)));will-change:transform;transition:transform .3s cubic-bezier(.2,.8,.2,1);z-index:0}.package-orbit{width:96%;height:61%;border:1px solid rgba(23,107,58,.17);border-radius:50%;--base-angle:-14deg}.package-orbit.orbit-two{width:78%;height:84%;border-style:dashed;border-color:rgba(23,107,58,.12);--base-angle:24deg}.package-trace{width:86px;height:1px;background:linear-gradient(90deg,transparent,rgba(23,107,58,.38))}.package-trace::after{content:"";position:absolute;right:-1px;top:-3px;width:7px;height:7px;border:1px solid rgba(23,107,58,.48);border-radius:50%;background:var(--bg)}.trace-one{top:11%;right:17%;--base-angle:8deg}.trace-two{bottom:9%;left:13%;--base-angle:188deg}
-    .package-shadow{position:absolute;width:min(78%,280px);aspect-ratio:1;border-radius:22%;background:linear-gradient(145deg,rgba(23,107,58,.17),rgba(23,107,58,.07));box-shadow:0 20px 34px rgba(23,107,58,.12);transform:translate3d(calc(15px + var(--decor-x,0px)),calc(18px + var(--decor-y,0px)),0) rotate(calc(-2deg + var(--decor-r,0deg))) scale(.98);transform-origin:center;will-change:transform;transition:transform .34s cubic-bezier(.2,.8,.2,1),box-shadow .2s;z-index:0}.package:hover .package-shadow{box-shadow:0 25px 40px rgba(23,107,58,.16)}.package img{filter:drop-shadow(0 10px 18px rgba(23,107,58,.1))}.package:hover img{filter:drop-shadow(0 14px 22px rgba(23,107,58,.14))}
+    .package{position:relative;display:grid;place-items:center;min-height:390px;perspective:900px;isolation:isolate}.package img{display:block;width:min(78%,280px);height:auto;border-radius:22%;transform:translate3d(var(--icon-x,0),var(--icon-y,0),0) rotateX(var(--icon-rx,0deg)) rotateY(var(--icon-ry,0deg));transform-style:preserve-3d;will-change:transform;filter:drop-shadow(0 10px 18px rgba(23,107,58,.1));transition:filter .2s;z-index:2}.package:hover img{filter:drop-shadow(0 14px 22px rgba(23,107,58,.14))}.package-cords{position:absolute;inset:0;width:100%;height:100%;overflow:visible;pointer-events:none;z-index:0}.package-cords path{fill:none;stroke:rgba(23,107,58,.34);stroke-width:1.35;stroke-linecap:round;vector-effect:non-scaling-stroke}.package-cords path:nth-child(even){stroke:rgba(62,79,179,.3)}
+    .package-format{position:absolute;display:flex;align-items:center;gap:8px;min-width:70px;height:38px;padding:0 10px;border:1px solid rgba(23,107,58,.24);border-radius:9px;background:rgba(255,255,255,.9);color:var(--brand);box-shadow:0 7px 18px rgba(23,107,58,.1);backdrop-filter:blur(8px);transform:translate3d(var(--tag-x,0),var(--tag-y,0),0) rotate(calc(var(--base-r,0deg) + var(--tag-r,0deg)));transform-origin:var(--pivot-x,50%) 8px;will-change:transform;transition:background .2s,border-color .2s,box-shadow .2s;z-index:1}.package-format b{font:800 12px ui-monospace,SFMono-Regular,Consolas,monospace;letter-spacing:.04em}.tag-hole{width:9px;height:9px;flex:none;border:1.5px solid rgba(23,107,58,.5);border-radius:50%;background:var(--bg);box-shadow:inset 0 0 0 2px rgba(23,107,58,.08)}.package:hover .package-format{background:rgba(255,255,255,.96);border-color:rgba(23,107,58,.4);box-shadow:0 10px 24px rgba(23,107,58,.13)}.package-format:nth-of-type(1){left:-1%;top:15%;--base-r:-7deg;--pivot-x:calc(100% - 14px)}.package-format:nth-of-type(2){right:-3%;top:23%;--base-r:6deg;--pivot-x:14px}.package-format:nth-of-type(3){left:-4%;bottom:17%;--base-r:5deg;--pivot-x:calc(100% - 14px)}.package-format:nth-of-type(4){right:0;bottom:11%;--base-r:-6deg;--pivot-x:14px}
+    .package-shadow{position:absolute;width:min(78%,280px);aspect-ratio:1;border-radius:22%;background:linear-gradient(145deg,rgba(23,107,58,.17),rgba(23,107,58,.07));box-shadow:0 20px 34px rgba(23,107,58,.12);transform:translate3d(calc(15px + var(--decor-x,0px)),calc(18px + var(--decor-y,0px)),0) rotate(calc(-2deg + var(--decor-r,0deg))) scale(.98);transform-origin:center;will-change:transform;transition:transform .34s cubic-bezier(.2,.8,.2,1),box-shadow .2s;z-index:0}.package:hover .package-shadow{box-shadow:0 25px 40px rgba(23,107,58,.16)}
     section{padding:72px 0;border-top:1px solid var(--line)}h2{font-size:clamp(30px,4vw,48px);letter-spacing:-.04em;line-height:1.1;margin:0 0 34px}.grid{display:grid;grid-template-columns:repeat(2,1fr);border-top:1px solid var(--line)}
     .feature{padding:26px 8px 26px 0;border-bottom:1px solid var(--line);display:grid;grid-template-columns:44px 1fr;gap:14px}.feature:nth-child(odd){padding-right:30px}.feature:nth-child(even){padding-left:30px;border-left:1px solid var(--line)}.icon{width:38px;height:38px;border-radius:10px;background:var(--brand-soft);color:var(--brand);display:grid;place-items:center;font-weight:800}.feature h3{margin:0 0 4px;font-size:18px}.feature p{margin:0;color:var(--muted)}
     .formats{display:flex;flex-wrap:wrap;gap:10px}.format{padding:10px 14px;border:1px solid var(--line);border-radius:999px;background:var(--surface);font:700 14px ui-monospace,SFMono-Regular,Consolas,monospace}
     footer{padding:38px 0;color:var(--muted);font-size:14px}.footer-row{display:flex;justify-content:space-between;gap:20px;flex-wrap:wrap}.footer-row a{color:var(--brand)}
     @media(max-width:720px){.hero{grid-template-columns:1fr;padding:62px 0 54px}.package{width:min(76vw,340px);min-height:330px;margin:10px auto 18px}.package img{width:min(68%,230px)}.grid{grid-template-columns:1fr}.feature:nth-child(n){padding:22px 0;border-left:0}h1{font-size:54px}}
     @media(max-width:720px){.package-shadow{width:min(68%,230px)}}
-    @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}.button,.package img,.package-format{transition:none}.package img,.package-format{transform:none}}
-    @media(prefers-reduced-motion:reduce){.package-orbit,.package-trace{transition:none;transform:rotate(var(--base-angle,0deg))}}
+    @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}.button,.package img,.package-format{transition:none}.package img{transform:none}.package-format{transform:rotate(var(--base-r,0deg))}.package-cords{display:none}}
     @media(prefers-reduced-motion:reduce){.package-shadow{transition:none;transform:translate3d(15px,18px,0) rotate(-2deg) scale(.98)}}
   </style>
 </head>
@@ -37,16 +35,18 @@
   <div class="wrap hero">
     <div><div class="eyebrow">Android · Open source · Version 3.0</div><h1>把应用，归档成你能掌控的文件</h1><p class="lead">导出与分享已安装应用，扫描并管理共享存储中的本地安装包。紧凑、直接，适配现代 Android。</p><div class="actions"><a class="button primary" href="https://github.com/daxiaamu/APKExport/releases">下载</a><a class="button" href="https://github.com/daxiaamu/APKExport">查看源码</a></div></div>
     <div class="package" aria-hidden="true">
-      <i class="package-orbit" data-decor-depth=".32"></i>
-      <i class="package-orbit orbit-two" data-decor-depth=".48"></i>
-      <i class="package-trace trace-one" data-decor-depth=".68"></i>
-      <i class="package-trace trace-two" data-decor-depth=".78"></i>
+      <svg class="package-cords" viewBox="0 0 400 390" preserveAspectRatio="none">
+        <path d="M105 120 Q82 94 65 75"/>
+        <path d="M295 130 Q319 113 335 100"/>
+        <path d="M110 270 Q84 290 65 315"/>
+        <path d="M290 270 Q318 301 340 340"/>
+      </svg>
       <i class="package-shadow" data-decor-depth=".42"></i>
-      <span class="package-format" data-depth="1.35">APK</span>
-      <span class="package-format" data-depth=".85">APKS</span>
+      <span class="package-format" data-mass="1.05"><b>APK</b><i class="tag-hole"></i></span>
+      <span class="package-format" data-mass="1.55"><i class="tag-hole"></i><b>APKS</b></span>
       <img src="images/apkexport.svg" alt="">
-      <span class="package-format" data-depth="1.1">APKM</span>
-      <span class="package-format" data-depth="1.55">XAPK</span>
+      <span class="package-format" data-mass="1.3"><b>APKM</b><i class="tag-hole"></i></span>
+      <span class="package-format" data-mass="1.8"><i class="tag-hole"></i><b>XAPK</b></span>
     </div>
   </div>
   <section id="features"><div class="wrap"><h2>导出、安装、整理<br>集中在一个工具里</h2><div class="grid">
@@ -64,55 +64,6 @@
   </div></section>
 </main>
 <footer><div class="wrap footer-row"><span>维护者：<a href="https://github.com/daxiaamu">大侠阿木</a></span><span>基于 <a href="https://github.com/leftshine/APKExport">leftshine/APKExport</a> 持续维护</span></div></footer>
-<script>
-(() => {
-  const visual = document.querySelector('.package');
-  if (!visual || !matchMedia('(pointer: fine)').matches || matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-  let frame = 0;
-  const tags = [...visual.querySelectorAll('.package-format')];
-  const decorations = [...visual.querySelectorAll('[data-decor-depth]')];
-  const set = (name, value) => visual.style.setProperty(name, value);
-  const reset = () => {
-    cancelAnimationFrame(frame);
-    frame = requestAnimationFrame(() => {
-      set('--icon-x', '0px'); set('--icon-y', '0px');
-      set('--icon-rx', '0deg'); set('--icon-ry', '0deg');
-      tags.forEach(tag => {
-        tag.style.setProperty('--tag-x', '0px');
-        tag.style.setProperty('--tag-y', '0px');
-        tag.style.removeProperty('--tag-r');
-      });
-      decorations.forEach(item => {
-        item.style.setProperty('--decor-x', '0px');
-        item.style.setProperty('--decor-y', '0px');
-        item.style.setProperty('--decor-r', '0deg');
-      });
-    });
-  };
-  visual.addEventListener('pointermove', event => {
-    const box = visual.getBoundingClientRect();
-    const x = Math.max(-1, Math.min(1, ((event.clientX - box.left) / box.width - .5) * 2));
-    const y = Math.max(-1, Math.min(1, ((event.clientY - box.top) / box.height - .5) * 2));
-    cancelAnimationFrame(frame);
-    frame = requestAnimationFrame(() => {
-      set('--icon-x', (x * 9) + 'px'); set('--icon-y', (y * 7) + 'px');
-      set('--icon-rx', (-y * 5) + 'deg'); set('--icon-ry', (x * 6) + 'deg');
-      tags.forEach(tag => {
-        const depth = Number(tag.dataset.depth || 1);
-        tag.style.setProperty('--tag-x', (x * 5 * depth) + 'px');
-        tag.style.setProperty('--tag-y', (y * 4 * depth) + 'px');
-        tag.style.setProperty('--tag-r', (x * .7 * depth) + 'deg');
-      });
-      decorations.forEach(item => {
-        const depth = Number(item.dataset.decorDepth || 1);
-        item.style.setProperty('--decor-x', (x * 5 * depth) + 'px');
-        item.style.setProperty('--decor-y', (y * 4 * depth) + 'px');
-        item.style.setProperty('--decor-r', (x * .5 * depth) + 'deg');
-      });
-    });
-  });
-  visual.addEventListener('pointerleave', reset);
-})();
-</script>
+<script src="hero-physics.js"></script>
 </body>
 </html>
