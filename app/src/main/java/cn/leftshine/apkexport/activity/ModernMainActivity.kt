@@ -604,7 +604,7 @@ private fun ApkExportApp(initialDestination: MainDestination, viewModel: MainVie
             onCustomShare = requestCustomShare,
             onBatchShare = requestBatchShare,
             onCheckUpdate = AppUpdateManager::manualCheck,
-            onHelp = { context.startActivity(Intent(Intent.ACTION_VIEW, "https://leftshine.gitlab.io/apkexport/help/index.html".toUri())) },
+            onHelp = { context.startActivity(Intent(Intent.ACTION_VIEW, "https://daxiaamu.github.io/APKExport/help/index.html".toUri())) },
             onBatchInstaller = { context.startActivity(Intent(Intent.ACTION_VIEW, "https://optool.daxiaamu.com/super_adb".toUri())) },
             onOriginalProject = { context.startActivity(Intent(Intent.ACTION_VIEW, "https://github.com/leftshine/APKExport".toUri())) },
             onMaintainerProject = { context.startActivity(Intent(Intent.ACTION_VIEW, "https://github.com/daxiaamu/APKExport".toUri())) },

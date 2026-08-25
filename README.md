@@ -1,5 +1,7 @@
 # APKExport
 
+项目主页：[https://daxiaamu.github.io/APKExport/](https://daxiaamu.github.io/APKExport/)
+
 一款现代、轻量的 Android 应用导出与安装包管理工具。本仓库是 [leftshine/APKExport](https://github.com/leftshine/APKExport) 的持续维护版本。
 
 ## 功能
