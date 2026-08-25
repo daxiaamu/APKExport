@@ -7,11 +7,11 @@
   <title>APKExport · 使用帮助</title>
   <style>
     :root{--bg:#f4f7f3;--surface:#fff;--ink:#172019;--muted:#607066;--line:#d7e0d8;--brand:#176b3a;--soft:#dcefe1}
-    *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font-family:"Noto Sans SC","Microsoft YaHei",system-ui,sans-serif;line-height:1.7}.wrap{width:min(760px,calc(100% - 36px));margin:auto}
+    *{box-sizing:border-box}body{margin:0;min-height:100vh;display:flex;flex-direction:column;background:var(--bg);color:var(--ink);font-family:"Noto Sans SC","Microsoft YaHei",system-ui,sans-serif;line-height:1.7}.wrap{width:min(760px,calc(100% - 36px));margin:auto}
     header{border-bottom:1px solid var(--line);padding:24px 0}header a{color:var(--brand);text-decoration:none;font-weight:700}
-    main{padding:54px 0 80px}h1{font-size:clamp(38px,7vw,64px);line-height:1;letter-spacing:-.05em;margin:0 0 20px}h2{font-size:24px;margin:44px 0 12px}.lead,p{color:var(--muted)}.lead{font-size:19px}
+    main{padding:54px 0 80px;flex:1}h1{font-size:clamp(38px,7vw,64px);line-height:1;letter-spacing:-.05em;margin:0 0 20px}h2{font-size:24px;margin:44px 0 12px}.lead,p{color:var(--muted)}.lead{font-size:19px}
     ol{padding:0;list-style:none;counter-reset:step;border-top:1px solid var(--line)}li{counter-increment:step;display:grid;grid-template-columns:42px 1fr;gap:14px;padding:20px 0;border-bottom:1px solid var(--line)}li:before{content:counter(step);width:34px;height:34px;border-radius:10px;background:var(--soft);color:var(--brand);display:grid;place-items:center;font-weight:800}
-    code{background:var(--soft);color:var(--brand);padding:2px 6px;border-radius:5px}.note{margin-top:28px;padding:18px;border-left:4px solid var(--brand);background:var(--surface)}a{color:var(--brand)}
+    code{background:var(--soft);color:var(--brand);padding:2px 6px;border-radius:5px}.note{margin-top:28px;padding:18px;border-left:4px solid var(--brand);background:var(--surface)}a{color:var(--brand)}footer{border-top:1px solid var(--line);padding:24px 0;color:var(--muted)}footer p{margin:0}
   </style>
 </head>
 <body>
@@ -27,7 +27,7 @@
   <ol><li><span>在其他应用中打开系统分享面板。</span></li><li><span>选择 APKExport 的“提取该应用的 APK”。</span></li><li><span>确认应用信息和文件名，然后选择“导出”或“导出并分享”。</span></li></ol>
   <h2>文件名占位符</h2>
   <p><code>#N</code> 应用名称　<code>#P</code> 包名　<code>#V</code> 版本名称　<code>#C</code> 版本号</p>
-  <p>仍有问题？前往 <a href="https://github.com/daxiaamu/APKExport/issues">GitHub Issues</a> 反馈。</p>
 </main>
+<footer><div class="wrap"><p>遇到问题或有改进建议？前往 <a href="https://github.com/daxiaamu/APKExport/issues">GitHub Issues</a> 提交反馈。</p></div></footer>
 </body>
 </html>
