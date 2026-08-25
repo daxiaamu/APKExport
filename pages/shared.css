@@ -1,0 +1,8 @@
+.site-header{height:64px;display:flex;align-items:center;border-bottom:1px solid var(--line);background:rgba(244,247,243,.9);position:sticky;top:0;z-index:5;backdrop-filter:blur(12px)}
+.site-nav{width:min(1080px,calc(100% - 36px));margin:auto;display:flex;align-items:center;justify-content:space-between}
+.brand{display:flex;align-items:center;gap:10px;font-weight:760;text-decoration:none;letter-spacing:-.02em;color:var(--ink)}
+.brand img{width:32px;height:32px;border-radius:8px}
+.navlinks{display:flex;gap:22px;font-size:14px;color:var(--muted)}
+.navlinks a{text-decoration:none;color:inherit}.navlinks a:hover{color:var(--brand)}
+.navlinks a[aria-current="page"]{color:var(--ink);font-weight:700}
+@media(max-width:720px){.navlinks a:first-child{display:none}}

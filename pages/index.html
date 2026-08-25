@@ -6,13 +6,11 @@
   <meta name="theme-color" content="#176b3a">
   <meta name="description" content="APKExport — Android 应用导出与本地安装包管理工具">
   <title>APKExport · 应用归档工具</title>
+  <link rel="stylesheet" href="shared.css">
   <style>
     :root{--bg:#f4f7f3;--surface:#fff;--ink:#172019;--muted:#607066;--line:#d7e0d8;--brand:#176b3a;--brand-soft:#dcefe1}
     *{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:var(--bg);color:var(--ink);font-family:"Noto Sans SC","Microsoft YaHei",system-ui,sans-serif;line-height:1.65}
     a{color:inherit}.wrap{width:min(1080px,calc(100% - 36px));margin:auto}
-    header{height:64px;display:flex;align-items:center;border-bottom:1px solid var(--line);background:rgba(244,247,243,.9);position:sticky;top:0;z-index:5;backdrop-filter:blur(12px)}
-    nav{display:flex;align-items:center;justify-content:space-between}.brand{display:flex;align-items:center;gap:10px;font-weight:760;text-decoration:none;letter-spacing:-.02em}.brand img{width:32px;height:32px;border-radius:8px}
-    .navlinks{display:flex;gap:22px;font-size:14px;color:var(--muted)}.navlinks a{text-decoration:none}.navlinks a:hover{color:var(--brand)}
     .hero{padding:88px 0 72px;display:grid;grid-template-columns:1.35fr .65fr;gap:64px;align-items:center}
     .eyebrow{font-size:13px;font-weight:700;color:var(--brand);letter-spacing:.12em;text-transform:uppercase}
     h1{font-size:clamp(46px,8vw,88px);line-height:.94;letter-spacing:-.065em;margin:18px 0 28px;max-width:780px}
@@ -26,7 +24,7 @@
     .feature{padding:26px 8px 26px 0;border-bottom:1px solid var(--line);display:grid;grid-template-columns:44px 1fr;gap:14px}.feature:nth-child(odd){padding-right:30px}.feature:nth-child(even){padding-left:30px;border-left:1px solid var(--line)}.icon{width:38px;height:38px;border-radius:10px;background:var(--brand-soft);color:var(--brand);display:grid;place-items:center;font-weight:800}.feature h3{margin:0 0 4px;font-size:18px}.feature p{margin:0;color:var(--muted)}
     .formats{display:flex;flex-wrap:wrap;gap:10px}.format{padding:10px 14px;border:1px solid var(--line);border-radius:999px;background:var(--surface);font:700 14px ui-monospace,SFMono-Regular,Consolas,monospace}
     footer{padding:38px 0;color:var(--muted);font-size:14px}.footer-row{display:flex;justify-content:space-between;gap:20px;flex-wrap:wrap}.footer-row a{color:var(--brand)}
-    @media(max-width:720px){.navlinks a:first-child{display:none}.hero{grid-template-columns:1fr;padding:62px 0 54px}.package{width:min(76vw,340px);min-height:330px;margin:10px auto 18px}.package img{width:min(68%,230px)}.grid{grid-template-columns:1fr}.feature:nth-child(n){padding:22px 0;border-left:0}h1{font-size:54px}}
+    @media(max-width:720px){.hero{grid-template-columns:1fr;padding:62px 0 54px}.package{width:min(76vw,340px);min-height:330px;margin:10px auto 18px}.package img{width:min(68%,230px)}.grid{grid-template-columns:1fr}.feature:nth-child(n){padding:22px 0;border-left:0}h1{font-size:54px}}
     @media(max-width:720px){.package-shadow{width:min(68%,230px)}}
     @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}.button,.package img,.package-format{transition:none}.package img,.package-format{transform:none}}
     @media(prefers-reduced-motion:reduce){.package-orbit,.package-trace{transition:none;transform:rotate(var(--base-angle,0deg))}}
@@ -34,7 +32,7 @@
   </style>
 </head>
 <body>
-<header><nav class="wrap"><a class="brand" href="./"><img src="images/apkexport.svg" alt="">APKExport</a><div class="navlinks"><a href="#features">功能</a><a href="help/">帮助</a><a href="https://github.com/daxiaamu/APKExport">GitHub</a></div></nav></header>
+<header class="site-header"><nav class="site-nav"><a class="brand" href="./"><img src="images/apkexport.svg" alt="">APKExport</a><div class="navlinks"><a href="#features">功能</a><a href="help/">帮助</a><a href="https://github.com/daxiaamu/APKExport">GitHub</a></div></nav></header>
 <main>
   <div class="wrap hero">
     <div><div class="eyebrow">Android · Open source · Version 3.0</div><h1>把应用，归档成你能掌控的文件</h1><p class="lead">导出与分享已安装应用，扫描并管理共享存储中的本地安装包。紧凑、直接，适配现代 Android。</p><div class="actions"><a class="button primary" href="https://github.com/daxiaamu/APKExport/releases">下载</a><a class="button" href="https://github.com/daxiaamu/APKExport">查看源码</a></div></div>
