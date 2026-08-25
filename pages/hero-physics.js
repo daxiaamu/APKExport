@@ -69,7 +69,7 @@
       const dx = next.x - current.x;
       const dy = next.y - current.y;
       const distance = Math.max(1, Math.hypot(dx, dy));
-      const reach = 27;
+      const reach = 18;
       const outsideX = current.x + dx / distance * reach;
       const outsideY = current.y + dy / distance * reach;
       threadEnds[current.state.index].setAttribute('d', `M ${outsideX.toFixed(1)} ${outsideY.toFixed(1)} L ${current.x.toFixed(1)} ${current.y.toFixed(1)}`);
@@ -88,8 +88,8 @@
     const iconTargets = {
       x: pointer.x * 9,
       y: pointer.y * 7,
-      rx: -pointer.y * 5,
-      ry: pointer.x * 6
+      rx: -pointer.y * 6.5,
+      ry: pointer.x * 8
     };
     iconState.x += (iconTargets.x - iconState.x) * .2 * dt;
     iconState.y += (iconTargets.y - iconState.y) * .2 * dt;
@@ -125,6 +125,8 @@
 
       state.tag.style.setProperty('--tag-x', `${state.x}px`);
       state.tag.style.setProperty('--tag-y', `${state.y}px`);
+      state.tag.style.setProperty('--tag-rx', `${clamp(iconState.rx * .42 - state.vy * .55, -6, 6)}deg`);
+      state.tag.style.setProperty('--tag-ry', `${clamp(iconState.ry * .42 + state.vx * .55, -7, 7)}deg`);
       state.tag.style.setProperty('--tag-r', `${state.angle}deg`);
       energy += Math.abs(targetX - state.x) + Math.abs(targetY - state.y) + Math.abs(state.vx) + Math.abs(state.vy) + Math.abs(state.angularVelocity);
     });
