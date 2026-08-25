@@ -18,13 +18,13 @@
     h1{font-size:clamp(46px,8vw,88px);line-height:.94;letter-spacing:-.065em;margin:18px 0 28px;max-width:780px}
     .lead{font-size:clamp(18px,2vw,22px);color:var(--muted);max-width:650px;margin:0 0 34px}
     .actions{display:flex;gap:12px;flex-wrap:wrap}.button{display:inline-flex;align-items:center;justify-content:center;min-height:46px;padding:0 20px;border:1px solid var(--line);border-radius:12px;background:var(--surface);font-weight:700;text-decoration:none;transition:.16s ease}.button.primary{background:var(--brand);border-color:var(--brand);color:white}.button:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(23,107,58,.12)}.button:focus-visible{outline:3px solid #8ed69b;outline-offset:3px}
-    .package{display:grid;place-items:center;perspective:900px}.package img{display:block;width:min(100%,320px);height:auto;border-radius:22%;transform:translate3d(var(--icon-x,0),var(--icon-y,0),0) rotateX(var(--icon-rx,0deg)) rotateY(var(--icon-ry,0deg));transform-style:preserve-3d;will-change:transform;filter:drop-shadow(0 18px 24px rgba(23,107,58,.16));transition:transform .2s cubic-bezier(.2,.8,.2,1),filter .2s}.package:hover img{filter:drop-shadow(0 24px 30px rgba(23,107,58,.22))}
+    .package{position:relative;display:grid;place-items:center;min-height:390px;perspective:900px;isolation:isolate}.package img{display:block;width:min(78%,280px);height:auto;border-radius:22%;transform:translate3d(var(--icon-x,0),var(--icon-y,0),0) rotateX(var(--icon-rx,0deg)) rotateY(var(--icon-ry,0deg));transform-style:preserve-3d;will-change:transform;filter:drop-shadow(0 18px 24px rgba(23,107,58,.16));transition:transform .2s cubic-bezier(.2,.8,.2,1),filter .2s;z-index:2}.package:hover img{filter:drop-shadow(0 24px 30px rgba(23,107,58,.22))}.package-format{position:absolute;display:grid;place-items:center;min-width:58px;height:34px;padding:0 11px;border:1px solid rgba(23,107,58,.2);border-radius:10px;background:rgba(255,255,255,.82);color:var(--brand);font:800 12px ui-monospace,SFMono-Regular,Consolas,monospace;letter-spacing:.04em;box-shadow:0 8px 24px rgba(23,107,58,.09);backdrop-filter:blur(8px);transform:translate3d(var(--tag-x,0),var(--tag-y,0),0) rotate(var(--tag-r,var(--base-r,0deg)));will-change:transform;transition:transform .24s cubic-bezier(.2,.8,.2,1),background .2s,border-color .2s;z-index:3}.package:hover .package-format{background:rgba(255,255,255,.94);border-color:rgba(23,107,58,.34)}.package-format:nth-of-type(1){left:0;top:17%;--base-r:-7deg}.package-format:nth-of-type(2){right:-2%;top:25%;--base-r:6deg}.package-format:nth-of-type(3){left:-3%;bottom:19%;--base-r:5deg}.package-format:nth-of-type(4){right:1%;bottom:13%;--base-r:-6deg}
     section{padding:72px 0;border-top:1px solid var(--line)}h2{font-size:clamp(30px,4vw,48px);letter-spacing:-.04em;line-height:1.1;margin:0 0 34px}.grid{display:grid;grid-template-columns:repeat(2,1fr);border-top:1px solid var(--line)}
     .feature{padding:26px 8px 26px 0;border-bottom:1px solid var(--line);display:grid;grid-template-columns:44px 1fr;gap:14px}.feature:nth-child(odd){padding-right:30px}.feature:nth-child(even){padding-left:30px;border-left:1px solid var(--line)}.icon{width:38px;height:38px;border-radius:10px;background:var(--brand-soft);color:var(--brand);display:grid;place-items:center;font-weight:800}.feature h3{margin:0 0 4px;font-size:18px}.feature p{margin:0;color:var(--muted)}
     .formats{display:flex;flex-wrap:wrap;gap:10px}.format{padding:10px 14px;border:1px solid var(--line);border-radius:999px;background:var(--surface);font:700 14px ui-monospace,SFMono-Regular,Consolas,monospace}
     footer{padding:38px 0;color:var(--muted);font-size:14px}.footer-row{display:flex;justify-content:space-between;gap:20px;flex-wrap:wrap}.footer-row a{color:var(--brand)}
-    @media(max-width:720px){.navlinks a:first-child{display:none}.hero{grid-template-columns:1fr;padding:62px 0 54px}.package{width:min(62vw,280px);margin:10px auto 18px}.grid{grid-template-columns:1fr}.feature:nth-child(n){padding:22px 0;border-left:0}h1{font-size:54px}}
-    @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}.button,.package img{transition:none}.package img{transform:none}}
+    @media(max-width:720px){.navlinks a:first-child{display:none}.hero{grid-template-columns:1fr;padding:62px 0 54px}.package{width:min(76vw,340px);min-height:330px;margin:10px auto 18px}.package img{width:min(68%,230px)}.grid{grid-template-columns:1fr}.feature:nth-child(n){padding:22px 0;border-left:0}h1{font-size:54px}}
+    @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}.button,.package img,.package-format{transition:none}.package img,.package-format{transform:none}}
   </style>
 </head>
 <body>
@@ -32,7 +32,13 @@
 <main>
   <div class="wrap hero">
     <div><div class="eyebrow">Android · Open source · Version 3.0</div><h1>把应用，归档成你能掌控的文件</h1><p class="lead">导出与分享已安装应用，扫描并管理共享存储中的本地安装包。紧凑、直接，适配现代 Android。</p><div class="actions"><a class="button primary" href="https://github.com/daxiaamu/APKExport/releases">下载</a><a class="button" href="https://github.com/daxiaamu/APKExport">查看源码</a></div></div>
-    <div class="package" aria-hidden="true"><img src="images/apkexport.png" alt=""></div>
+    <div class="package" aria-hidden="true">
+      <span class="package-format" data-depth="1.35">APK</span>
+      <span class="package-format" data-depth=".85">APKS</span>
+      <img src="images/apkexport.png" alt="">
+      <span class="package-format" data-depth="1.1">APKM</span>
+      <span class="package-format" data-depth="1.55">XAPK</span>
+    </div>
   </div>
   <section id="features"><div class="wrap"><h2>导出、安装、整理<br>集中在一个工具里</h2><div class="grid">
     <article class="feature"><span class="icon">01</span><div><h3>批量导出与分享</h3><p>筛选、搜索、排序和多选应用；批量导出显示实时进度，并使用有界并行提升速度。</p></div></article>
@@ -54,12 +60,18 @@
   const visual = document.querySelector('.package');
   if (!visual || !matchMedia('(pointer: fine)').matches || matchMedia('(prefers-reduced-motion: reduce)').matches) return;
   let frame = 0;
+  const tags = [...visual.querySelectorAll('.package-format')];
   const set = (name, value) => visual.style.setProperty(name, value);
   const reset = () => {
     cancelAnimationFrame(frame);
     frame = requestAnimationFrame(() => {
       set('--icon-x', '0px'); set('--icon-y', '0px');
       set('--icon-rx', '0deg'); set('--icon-ry', '0deg');
+      tags.forEach(tag => {
+        tag.style.setProperty('--tag-x', '0px');
+        tag.style.setProperty('--tag-y', '0px');
+        tag.style.removeProperty('--tag-r');
+      });
     });
   };
   visual.addEventListener('pointermove', event => {
@@ -70,6 +82,12 @@
     frame = requestAnimationFrame(() => {
       set('--icon-x', (x * 9) + 'px'); set('--icon-y', (y * 7) + 'px');
       set('--icon-rx', (-y * 5) + 'deg'); set('--icon-ry', (x * 6) + 'deg');
+      tags.forEach(tag => {
+        const depth = Number(tag.dataset.depth || 1);
+        tag.style.setProperty('--tag-x', (x * 15 * depth) + 'px');
+        tag.style.setProperty('--tag-y', (y * 12 * depth) + 'px');
+        tag.style.setProperty('--tag-r', (x * 2.2 * depth) + 'deg');
+      });
     });
   });
   visual.addEventListener('pointerleave', reset);
