@@ -3,7 +3,6 @@ package cn.leftshine.apkexport.utils;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Environment;
-import android.preference.PreferenceManager;
 import java.io.File;
 
 public final class Settings {
@@ -16,7 +15,10 @@ public final class Settings {
 
     public static void init(Context context) {
         Context applicationContext = context.getApplicationContext();
-        preferences = PreferenceManager.getDefaultSharedPreferences(applicationContext);
+        preferences = applicationContext.getSharedPreferences(
+                applicationContext.getPackageName() + "_preferences",
+                Context.MODE_PRIVATE
+        );
         defaultExportPath = new File(
                 Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS),
                 "APKExport"

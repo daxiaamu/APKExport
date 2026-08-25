@@ -11,3 +11,16 @@
 local.properties
 **/build/
 .gradle/
+/.idea/
+/.kotlin/
+/.verysync/
+*.apk
+*.aab
+*.apks
+*.xapk
+*.apkm
+*.jks
+*.keystore
+/app/debug/
+/app/release/
+/signed/

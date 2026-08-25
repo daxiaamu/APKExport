@@ -18,7 +18,6 @@ android {
         targetSdk 37
         versionCode 300
         versionName '3.0'
-        testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'
         vectorDrawables.useSupportLibrary = true
     }
 
@@ -55,11 +54,9 @@ android {
 }
 
 dependencies {
-    implementation fileTree(dir: 'libs', include: ['*.jar'])
 
     def composeBom = platform('androidx.compose:compose-bom:2026.06.00')
     implementation composeBom
-    androidTestImplementation composeBom
     implementation 'androidx.activity:activity-compose:1.13.0'
     implementation 'androidx.compose.material3:material3'
     implementation 'androidx.compose.material:material-icons-extended'
@@ -71,17 +68,7 @@ dependencies {
     implementation 'androidx.core:core-ktx:1.18.0'
     coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:2.1.5'
 
-    implementation 'androidx.appcompat:appcompat:1.7.1'
-    implementation 'androidx.constraintlayout:constraintlayout:2.2.1'
     implementation 'com.google.android.material:material:1.13.0'
-    implementation 'androidx.legacy:legacy-support-v4:1.0.0'
-    implementation 'androidx.vectordrawable:vectordrawable:1.2.0'
-    implementation 'com.github.angads25:filepicker:1.1.1'
 
     debugImplementation 'androidx.compose.ui:ui-tooling'
-    debugImplementation 'androidx.compose.ui:ui-test-manifest'
-    testImplementation 'junit:junit:4.13.2'
-    androidTestImplementation 'androidx.test.ext:junit:1.3.0'
-    androidTestImplementation 'androidx.test.espresso:espresso-core:3.7.0'
-    androidTestImplementation 'androidx.compose.ui:ui-test-junit4'
 }
