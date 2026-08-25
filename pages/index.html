@@ -22,9 +22,8 @@
     section{padding:72px 0;border-top:1px solid var(--line)}h2{font-size:clamp(30px,4vw,48px);letter-spacing:-.04em;line-height:1.1;margin:0 0 34px}.grid{display:grid;grid-template-columns:repeat(2,1fr);border-top:1px solid var(--line)}
     .feature{padding:26px 8px 26px 0;border-bottom:1px solid var(--line);display:grid;grid-template-columns:44px 1fr;gap:14px}.feature:nth-child(odd){padding-right:30px}.feature:nth-child(even){padding-left:30px;border-left:1px solid var(--line)}.icon{width:38px;height:38px;border-radius:10px;background:var(--brand-soft);color:var(--brand);display:grid;place-items:center;font-weight:800}.feature h3{margin:0 0 4px;font-size:18px}.feature p{margin:0;color:var(--muted)}
     .formats{display:flex;flex-wrap:wrap;gap:10px}.format{padding:10px 14px;border:1px solid var(--line);border-radius:999px;background:var(--surface);font:700 14px ui-monospace,SFMono-Regular,Consolas,monospace}
-    .release{background:var(--dark);color:#eff7f0;border-radius:var(--radius);padding:34px;display:flex;justify-content:space-between;gap:30px;align-items:center}.release p{color:#b9c8bc;margin:8px 0 0}.release .button{border-color:#4c6552;background:#f2fff4;color:#14351d;white-space:nowrap}
     footer{padding:38px 0;color:var(--muted);font-size:14px}.footer-row{display:flex;justify-content:space-between;gap:20px;flex-wrap:wrap}.footer-row a{color:var(--brand)}
-    @media(max-width:720px){.navlinks a:first-child{display:none}.hero{grid-template-columns:1fr;padding:62px 0 54px}.package{width:min(70vw,300px);margin:10px auto 18px}.grid{grid-template-columns:1fr}.feature:nth-child(n){padding:22px 0;border-left:0}.release{align-items:flex-start;flex-direction:column}h1{font-size:54px}}
+    @media(max-width:720px){.navlinks a:first-child{display:none}.hero{grid-template-columns:1fr;padding:62px 0 54px}.package{width:min(70vw,300px);margin:10px auto 18px}.grid{grid-template-columns:1fr}.feature:nth-child(n){padding:22px 0;border-left:0}h1{font-size:54px}}
     @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}.button{transition:none}}
   </style>
 </head>
@@ -32,7 +31,7 @@
 <header><nav class="wrap"><a class="brand" href="./"><img src="images/apkexport.png" alt="">APKExport</a><div class="navlinks"><a href="#features">功能</a><a href="help/">帮助</a><a href="https://github.com/daxiaamu/APKExport">GitHub</a></div></nav></header>
 <main>
   <div class="wrap hero">
-    <div><div class="eyebrow">Android · Open source · Version 3.0</div><h1>把应用，归档成你能掌控的文件</h1><p class="lead">导出与分享已安装应用，扫描并管理共享存储中的本地安装包。紧凑、直接，适配现代 Android。</p><div class="actions"><a class="button primary" href="https://github.com/daxiaamu/APKExport/releases">下载 Pre-release</a><a class="button" href="https://github.com/daxiaamu/APKExport">查看源码</a></div></div>
+    <div><div class="eyebrow">Android · Open source · Version 3.0</div><h1>把应用，归档成你能掌控的文件</h1><p class="lead">导出与分享已安装应用，扫描并管理共享存储中的本地安装包。紧凑、直接，适配现代 Android。</p><div class="actions"><a class="button primary" href="https://github.com/daxiaamu/APKExport/releases">下载</a><a class="button" href="https://github.com/daxiaamu/APKExport">查看源码</a></div></div>
     <div class="package" aria-hidden="true"><img src="images/apkexport.png" alt=""></div>
   </div>
   <section id="features"><div class="wrap"><h2>导出、安装、整理<br>集中在一个工具里</h2><div class="grid">
@@ -42,7 +41,12 @@
     <article class="feature"><span class="icon">04</span><div><h3>现代 Android 体验</h3><p>Jetpack Compose 与 Material 3 界面，亮暗主题跟随系统，支持简中、繁中和英文。</p></div></article>
   </div></div></section>
   <section><div class="wrap"><h2>一页管理多种格式</h2><div class="formats"><span class="format">APK</span><span class="format">APKS</span><span class="format">XAPK</span><span class="format">APKM</span></div></div></section>
-  <section><div class="wrap"><div class="release"><div><strong>3.0 Pre-release</strong><p>这是现代化重构后的首个测试版本。欢迎安装验证并通过 Issues 反馈。</p></div><a class="button" href="https://github.com/daxiaamu/APKExport/releases">前往下载</a></div></div></section>
+  <section><div class="wrap">
+    <div class="eyebrow">配套工具</div>
+    <h2>PC 端批量安装器</h2>
+    <p class="lead">在电脑上批量安装应用，支持 APK、XAPK、APKM、APKS 等多种格式。</p>
+    <a class="button" href="https://optool.daxiaamu.com/super_adb">打开 APK 批量安装器</a>
+  </div></section>
 </main>
 <footer><div class="wrap footer-row"><span>维护者：<a href="https://github.com/daxiaamu">大侠阿木</a></span><span>基于 <a href="https://github.com/leftshine/APKExport">leftshine/APKExport</a> 持续维护</span></div></footer>
 </body>
