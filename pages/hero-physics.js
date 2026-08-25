@@ -3,15 +3,15 @@
   const icon = visual?.querySelector('img');
   const tags = [...(visual?.querySelectorAll('.package-format') || [])];
   const cord = visual?.querySelector('.package-cords path');
-  const threadSvg = visual?.querySelector('.package-thread-ends');
-  const threadEnds = [...(threadSvg?.querySelectorAll('path') || [])];
-  if (!visual || !icon || tags.length !== 4 || !cord || threadEnds.length !== 4) return;
+  const holeCordSvg = visual?.querySelector('.package-cord-holes');
+  const holeCord = holeCordSvg?.querySelector('path');
+  const holeClips = [...(holeCordSvg?.querySelectorAll('clipPath circle') || [])];
+  if (!visual || !icon || tags.length !== 4 || !cord || !holeCord || holeClips.length !== 4) return;
 
   const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
   const finePointer = matchMedia('(pointer: fine)').matches;
   if (reduced || !finePointer) return;
 
-  const decorations = [...visual.querySelectorAll('[data-decor-depth]')];
   const pointer = { x: 0, y: 0 };
   const iconState = { x: 0, y: 0, rx: 0, ry: 0 };
   const states = tags.map((tag, index) => ({
@@ -46,7 +46,7 @@
     });
 
     visual.querySelector('.package-cords').setAttribute('viewBox', `0 0 ${width} ${height}`);
-    threadSvg.setAttribute('viewBox', `0 0 ${width} ${height}`);
+    holeCordSvg.setAttribute('viewBox', `0 0 ${width} ${height}`);
     let path = `M ${points[0].x.toFixed(1)} ${points[0].y.toFixed(1)}`;
     for (let index = 0; index < points.length; index++) {
       const previous = points[(index - 1 + points.length) % points.length];
@@ -64,16 +64,12 @@
       path += ` C ${first.x.toFixed(1)} ${first.y.toFixed(1)}, ${second.x.toFixed(1)} ${second.y.toFixed(1)}, ${next.x.toFixed(1)} ${next.y.toFixed(1)}`;
     }
     cord.setAttribute('d', `${path} Z`);
-    points.forEach((current, index) => {
-      const next = points[(index + 1) % points.length];
-      const dx = next.x - current.x;
-      const dy = next.y - current.y;
-      const distance = Math.max(1, Math.hypot(dx, dy));
-      const reach = 18;
-      const outsideX = current.x + dx / distance * reach;
-      const outsideY = current.y + dy / distance * reach;
-      threadEnds[current.state.index].setAttribute('d', `M ${outsideX.toFixed(1)} ${outsideY.toFixed(1)} L ${current.x.toFixed(1)} ${current.y.toFixed(1)}`);
+    holeCord.setAttribute('d', cord.getAttribute('d'));
+    points.forEach(({ x, y }, index) => {
+      holeClips[index].setAttribute('cx', x.toFixed(1));
+      holeClips[index].setAttribute('cy', y.toFixed(1));
     });
+
   }
 
   function requestTick() {
@@ -99,12 +95,6 @@
     setVisual('--icon-y', `${iconState.y}px`);
     setVisual('--icon-rx', `${iconState.rx}deg`);
     setVisual('--icon-ry', `${iconState.ry}deg`);
-
-    decorations.forEach(item => {
-      const depth = Number(item.dataset.decorDepth || 1);
-      item.style.setProperty('--decor-x', `${iconState.x * .5 * depth}px`);
-      item.style.setProperty('--decor-y', `${iconState.y * .55 * depth}px`);
-    });
 
     let energy = Math.abs(iconTargets.x - iconState.x) + Math.abs(iconTargets.y - iconState.y);
     states.forEach(state => {
