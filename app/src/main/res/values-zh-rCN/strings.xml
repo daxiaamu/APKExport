@@ -7,5 +7,4 @@
 
     <!--设置页面-->
     <string name="input_new_name">输入新的文件名</string>
-    <string name="super_export">导出该应用的APK</string>
 </resources>

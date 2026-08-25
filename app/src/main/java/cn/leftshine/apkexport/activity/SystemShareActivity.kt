@@ -109,7 +109,7 @@ class SystemShareActivity : ComponentActivity() {
             Scaffold(
                 topBar = {
                     TopAppBar(
-                        title = { Text(stringResource(R.string.super_export)) },
+                        title = { Text(stringResource(R.string.app_name)) },
                         navigationIcon = { IconButton(onClick = ::finish) { Icon(Icons.AutoMirrored.Outlined.ArrowBack, stringResource(R.string.modern_cancel)) } },
                         actions = {
                             IconButton(onClick = { openMain(ModernMainActivity.DESTINATION_EXPORT) }) { Icon(Icons.Outlined.Home, stringResource(R.string.action_main)) }

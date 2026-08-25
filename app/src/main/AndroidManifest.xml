@@ -53,7 +53,7 @@
         <activity
             android:name=".activity.SystemShareActivity"
             android:exported="true"
-            android:label="@string/super_export"
+            android:label="@string/app_name"
             android:theme="@style/AppTheme.NoActionBar">
             <intent-filter>
                 <action android:name="android.intent.action.SEND" />
