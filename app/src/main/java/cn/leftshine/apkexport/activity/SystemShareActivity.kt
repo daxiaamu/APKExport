@@ -103,7 +103,6 @@ class SystemShareActivity : ComponentActivity() {
             fileName = app?.let(::defaultFileName).orEmpty()
             loading = false
             if (app == null) message = resources.getString(R.string.modern_app_info_failed)
-            else if (Settings.isExportDerect()) requestExport(true)
         }
 
         MaterialTheme {
@@ -165,7 +164,6 @@ class SystemShareActivity : ComponentActivity() {
                 .onSuccess {
                     if (share) shareApk(this@SystemShareActivity, it)
                     report(getString(R.string.modern_exported_to, it.displayPath))
-                    if (Settings.isExportDerect()) finish()
                 }
                 .onFailure { report(getString(R.string.modern_export_failed, it.message ?: getString(R.string.modern_unknown_error))) }
             setExporting(false)

@@ -7,7 +7,6 @@ import android.preference.PreferenceManager;
 import java.io.File;
 
 public final class Settings {
-    private static final String KEY_EXPORT_DIRECT = "is_export_direct";
     private static final String KEY_CUSTOM_FILENAME_FORMAT = "custom_filename_format";
     private static final String KEY_CUSTOM_EXPORT_PATH = "custom_export_path";
     private static SharedPreferences preferences;
@@ -24,9 +23,6 @@ public final class Settings {
         ).getPath();
     }
 
-    public static boolean isExportDerect() {
-        return preferences.getBoolean(KEY_EXPORT_DIRECT, false);
-    }
 
     public static String getCustomFileNameFormat() {
         return preferences.getString(KEY_CUSTOM_FILENAME_FORMAT, "#N-#P-#V");
