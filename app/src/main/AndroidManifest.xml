@@ -1,86 +1,73 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="cn.leftshine.apkexport">
+    xmlns:tools="http://schemas.android.com/tools">
 
-    <!--<uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />-->
-    <uses-permission android:name="android.permission.MANAGE_EXTERNAL_STORAGE" />
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission
+        android:name="android.permission.MANAGE_EXTERNAL_STORAGE"
+        tools:ignore="ScopedStorage" />
+
+    <!-- Core functionality: enumerate installed packages for APK export. -->
+    <uses-permission
+        android:name="android.permission.QUERY_ALL_PACKAGES"
+        tools:ignore="QueryAllPackagesPermission" />
+    <uses-permission
+        android:name="android.permission.READ_EXTERNAL_STORAGE"
+        android:maxSdkVersion="32" />
+    <uses-permission
+        android:name="android.permission.WRITE_EXTERNAL_STORAGE"
+        android:maxSdkVersion="28" />
     <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />
-<!--    <uses-permission android:name="com.android.permission.GET_INSTALLED_APPS" />-->
 
-    <!-- todo: remove configChanges  when adapt runtime-changes https://developer.android.google.cn/guide/topics/resources/runtime-changes?hl=zh-cn -->
-    <!-- android:configChanges="orientation|screenSize|smallestScreenSize|screenLayout|uiMode"-->
     <application
         android:name=".MyApplication"
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
+        android:localeConfig="@xml/locales_config"
+        tools:targetApi="tiramisu"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
-        android:resizeableActivity="true"
         android:theme="@style/AppTheme">
+
         <activity
-            android:name=".activity.MainActivity"
-            android:label="@string/app_name"
-            android:configChanges="orientation|screenSize|smallestScreenSize|screenLayout"
+            android:name=".activity.ModernMainActivity"
+            android:exported="true"
             android:theme="@style/AppTheme.NoActionBar">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
-        </activity>
-        <activity
-            android:name=".activity.AboutActivity"
-            android:parentActivityName="activity.MainActivity" />
-        <activity
-            android:name=".activity.SettingActivity"
-            android:label="@string/title_activity_setting"
-            android:parentActivityName="activity.MainActivity"
-            android:theme="@style/AppTheme.NoActionBar">
-            <meta-data
-                android:name="android.support.PARENT_ACTIVITY"
-                android:value=".activity.MainActivity" />
         </activity>
 
         <provider
             android:name="androidx.core.content.FileProvider"
-            android:authorities="cn.leftshine.apkexport.fileprovider"
+            android:authorities="${applicationId}.fileprovider"
             android:exported="false"
             android:grantUriPermissions="true">
             <meta-data
                 android:name="android.support.FILE_PROVIDER_PATHS"
                 android:resource="@xml/file_paths" />
         </provider>
-<!--        //在manifest注册Activity时，加入category,使得你的App在分享这些类型的数据时会被系统调起-->
+
         <activity
             android:name=".activity.SystemShareActivity"
-            android:label="@string/super_export">
-<!--            //注册单选分享-->
+            android:exported="true"
+            android:label="@string/super_export"
+            android:theme="@style/AppTheme.NoActionBar">
             <intent-filter>
                 <action android:name="android.intent.action.SEND" />
-
                 <category android:name="android.intent.category.DEFAULT" />
-
                 <data android:mimeType="*/*" />
             </intent-filter>
-            <!--
-            //注册分享单张图片
-            <intent-filter>
-                <action android:name="android.intent.action.SEND"/>
-                <category android:name="android.intent.category.DEFAULT"/>
-                <data android:mimeType="image/*"/>
-            </intent-filter>
-            -->
-<!--            //注册多选分享-->
             <intent-filter>
                 <action android:name="android.intent.action.SEND_MULTIPLE" />
-
                 <category android:name="android.intent.category.DEFAULT" />
-
                 <data android:mimeType="*/*" />
             </intent-filter>
         </activity>
+        <receiver
+            android:name=".activity.PackageInstallReceiver"
+            android:exported="false" />
     </application>
-
 </manifest>

@@ -1,0 +1,12 @@
+{
+  "stable": {
+    "maxForcedVersionCode": 0,
+    "policyRevision": 1,
+    "reason": "Initial in-app update policy"
+  },
+  "beta": {
+    "maxForcedVersionCode": 0,
+    "policyRevision": 1,
+    "reason": "Initial beta in-app update policy"
+  }
+}

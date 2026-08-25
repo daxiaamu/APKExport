@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <paths>
-    <external-path name="apkexport_external" path="." />
-    <root-path name="apkexport_root" path="." />
+    <cache-path name="verified_updates" path="updates/" />
+    <external-path name="legacy_exports" path="Download/" />
 </paths>

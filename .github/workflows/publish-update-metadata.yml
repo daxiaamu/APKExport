@@ -1,0 +1,133 @@
+name: Publish update metadata
+
+on:
+  release:
+    types: [published]
+
+permissions:
+  contents: write
+
+concurrency:
+  group: update-metadata-${{ github.event.release.prerelease && 'beta' || 'stable' }}
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ github.token }}
+      REPOSITORY: ${{ github.repository }}
+      TAG: ${{ github.event.release.tag_name }}
+      RELEASE_URL: ${{ github.event.release.html_url }}
+      PUBLISHED_AT: ${{ github.event.release.published_at }}
+      CHANGELOG: ${{ github.event.release.body }}
+      IS_PRERELEASE: ${{ github.event.release.prerelease }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: master
+          fetch-depth: 0
+
+      - name: Download the unique APK asset
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p artifacts
+          gh release download "$TAG" --repo "$REPOSITORY" --pattern '*.apk' --dir artifacts
+          mapfile -t apks < <(find artifacts -maxdepth 1 -type f -name '*.apk')
+          test "${#apks[@]}" -eq 1 || { echo "Expected exactly one APK asset, found ${#apks[@]}"; exit 1; }
+          echo "APK=${apks[0]}" >> "$GITHUB_ENV"
+          echo "APK_NAME=$(basename "${apks[0]}")" >> "$GITHUB_ENV"
+
+      - name: Read and validate APK identity
+        shell: bash
+        run: |
+          set -euo pipefail
+          AAPT2="$(find "$ANDROID_HOME/build-tools" -type f -name aapt2 | sort -V | tail -1)"
+          BADGING="$($AAPT2 dump badging "$APK")"
+          PACKAGE="$(sed -n "s/^package: name='\([^']*\)'.*/\1/p" <<<"$BADGING")"
+          VERSION_CODE="$(sed -n "s/^package:.*versionCode='\([^']*\)'.*/\1/p" <<<"$BADGING")"
+          VERSION_NAME="$(sed -n "s/^package:.*versionName='\([^']*\)'.*/\1/p" <<<"$BADGING")"
+          test "$PACKAGE" = 'cn.leftshine.apkexport'
+          test "$TAG" = "$VERSION_NAME" -o "$TAG" = "v$VERSION_NAME" || { echo "Tag and APK versionName differ"; exit 1; }
+          echo "VERSION_CODE=$VERSION_CODE" >> "$GITHUB_ENV"
+          echo "VERSION_NAME=$VERSION_NAME" >> "$GITHUB_ENV"
+          echo "SHA256=$(sha256sum "$APK" | cut -d' ' -f1)" >> "$GITHUB_ENV"
+          echo "SIZE=$(stat -c%s "$APK")" >> "$GITHUB_ENV"
+
+      - name: Select and verify CDN downloads
+        shell: bash
+        run: |
+          set -euo pipefail
+          OWNER="${REPOSITORY%%/*}"
+          REPO="${REPOSITORY##*/}"
+          OFFICIAL="https://github.com/$REPOSITORY/releases/download/$TAG/$APK_NAME"
+          candidates=(
+            "https://ghfast.top/$OFFICIAL"
+            "https://gh-proxy.com/$OFFICIAL"
+            "https://ghproxy.net/$OFFICIAL"
+            "https://gh.llkk.cc/$OFFICIAL"
+            "https://ghp.keleyaa.com/$OFFICIAL"
+            "https://gh.monlor.com/$OFFICIAL"
+            "https://xget.xi-xu.me/gh/$OWNER/$REPO/releases/download/$TAG/$APK_NAME"
+          )
+          : > verified-urls.txt
+          for url in "${candidates[@]}"; do
+            file="$(mktemp)"
+            if curl --fail --location --proto '=https' --connect-timeout 12 --max-time 180 --retry 2 --output "$file" "$url" \
+              && test "$(sha256sum "$file" | cut -d' ' -f1)" = "$SHA256"; then
+              echo "$url" >> verified-urls.txt
+            fi
+            rm -f "$file"
+          done
+          test "$(cut -d/ -f3 verified-urls.txt | sort -u | wc -l)" -ge 5 || { echo 'Fewer than five verified CDN hosts'; exit 1; }
+          head -n 5 verified-urls.txt > selected-urls.txt
+          echo "$OFFICIAL" >> selected-urls.txt
+          jq -R -s 'split("\n") | map(select(length > 0))' selected-urls.txt > urls.json
+
+      - name: Generate and validate metadata
+        shell: bash
+        run: |
+          set -euo pipefail
+          CHANNEL=stable
+          TARGET=update.json
+          if test "$IS_PRERELEASE" = true; then CHANNEL=beta; TARGET=update-beta.json; fi
+          FORCED="$(jq -er --arg c "$CHANNEL" '.[$c].maxForcedVersionCode' update-policy.json)"
+          REVISION="$(jq -er --arg c "$CHANNEL" '.[$c].policyRevision' update-policy.json)"
+          REASON="$(jq -er --arg c "$CHANNEL" '.[$c].reason' update-policy.json)"
+          test "$FORCED" -ge 0 -a "$FORCED" -lt "$VERSION_CODE"
+          if test -f "$TARGET"; then
+            PREVIOUS="$(jq -er '.policyRevision' "$TARGET")"
+            test "$REVISION" -gt "$PREVIOUS" || { echo 'policyRevision must increase for every metadata change'; exit 1; }
+          fi
+          jq -n \
+            --arg channel "$CHANNEL" --arg versionName "$VERSION_NAME" \
+            --arg publishedAt "$PUBLISHED_AT" --arg changelog "$CHANGELOG" \
+            --arg sha256 "$SHA256" --arg releaseUrl "$RELEASE_URL" --arg reason "$REASON" \
+            --argjson versionCode "$VERSION_CODE" --argjson size "$SIZE" \
+            --argjson maxForcedVersionCode "$FORCED" --argjson policyRevision "$REVISION" \
+            --slurpfile urls urls.json \
+            '{schemaVersion:1, channel:$channel, versionCode:$versionCode, versionName:$versionName,
+              publishedAt:$publishedAt, changelog:$changelog, maxForcedVersionCode:$maxForcedVersionCode,
+              policyRevision:$policyRevision, policyReason:$reason, url:$urls[0][0], urls:$urls[0],
+              sha256:$sha256, size:$size, releaseUrl:$releaseUrl}' > "$TARGET"
+          jq -e '
+            .schemaVersion == 1 and (.channel == "stable" or .channel == "beta") and
+            (.versionCode|type == "number") and (.maxForcedVersionCode|type == "number") and
+            .maxForcedVersionCode >= 0 and .maxForcedVersionCode < .versionCode and
+            (.policyRevision|type == "number") and (.sha256|test("^[0-9a-f]{64}$")) and
+            (.urls|length >= 5) and ([.urls[]|capture("^https://(?<host>[^/]+)").host]|unique|length >= 5)
+          ' "$TARGET"
+          echo "TARGET=$TARGET" >> "$GITHUB_ENV"
+
+      - name: Commit metadata
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add "$TARGET"
+          git diff --cached --quiet && exit 0
+          git commit -m "Publish $TARGET for $TAG"
+          git pull --rebase origin master
+          git push origin HEAD:master
