@@ -1,0 +1,23 @@
+{
+  "schemaVersion": 1,
+  "channel": "beta",
+  "versionCode": 300,
+  "versionName": "3.0",
+  "publishedAt": "2026-08-25T00:33:45Z",
+  "changelog": "首个现代化维护版预发布，建议先在测试设备验证后再用于日常环境\n\n主要更新：\n- 使用 Jetpack Compose 与 Material 3 重构界面\n- 导出、本地安装包、设置三个可滑动页面\n- 支持用户应用与系统应用筛选、搜索、A–Z 排序及多选\n- 批量导出使用单一实时进度弹层，显示完成数量与百分比\n- 批量导出采用最多 3 路有界并行，批量分享一次分享全部所选应用\n- 支持扫描、安装和管理 APK、APKS、XAPK、APKM\n- 支持系统文件选择器设置导出位置和自定义文件名格式\n- 支持简体中文、繁体中文和英文\n- 新增应用内更新检查与下载校验\n- Target SDK 37，亮暗主题跟随系统\n- 使用自有 GitHub Pages 项目主页与帮助页\n- 清理原版完整模式/快速模式的隐藏配置和旧文档\n- 优化三行及以上提示文本的上下留白\n\nSHA-256：fef2ae479b75aeb9c18c91a2fb6f6125d73590aeb135b734d09d798d029503e1\n\n这是 Pre-release，如遇问题请在 GitHub Issues 反馈",
+  "maxForcedVersionCode": 0,
+  "policyRevision": 1,
+  "policyReason": "Initial beta in-app update policy",
+  "url": "https://ghfast.top/https://github.com/daxiaamu/APKExport/releases/download/v3.0/APKExport-v3.0.apk",
+  "urls": [
+    "https://ghfast.top/https://github.com/daxiaamu/APKExport/releases/download/v3.0/APKExport-v3.0.apk",
+    "https://gh-proxy.com/https://github.com/daxiaamu/APKExport/releases/download/v3.0/APKExport-v3.0.apk",
+    "https://ghproxy.net/https://github.com/daxiaamu/APKExport/releases/download/v3.0/APKExport-v3.0.apk",
+    "https://gh.llkk.cc/https://github.com/daxiaamu/APKExport/releases/download/v3.0/APKExport-v3.0.apk",
+    "https://gh.monlor.com/https://github.com/daxiaamu/APKExport/releases/download/v3.0/APKExport-v3.0.apk",
+    "https://github.com/daxiaamu/APKExport/releases/download/v3.0/APKExport-v3.0.apk"
+  ],
+  "sha256": "fef2ae479b75aeb9c18c91a2fb6f6125d73590aeb135b734d09d798d029503e1",
+  "size": 16608910,
+  "releaseUrl": "https://github.com/daxiaamu/APKExport/releases/tag/v3.0"
+}
