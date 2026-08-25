@@ -3,7 +3,9 @@
   const icon = visual?.querySelector('img');
   const tags = [...(visual?.querySelectorAll('.package-format') || [])];
   const cord = visual?.querySelector('.package-cords path');
-  if (!visual || !icon || tags.length !== 4 || !cord) return;
+  const threadSvg = visual?.querySelector('.package-thread-ends');
+  const threadEnds = [...(threadSvg?.querySelectorAll('path') || [])];
+  if (!visual || !icon || tags.length !== 4 || !cord || threadEnds.length !== 4) return;
 
   const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
   const finePointer = matchMedia('(pointer: fine)').matches;
@@ -44,6 +46,7 @@
     });
 
     visual.querySelector('.package-cords').setAttribute('viewBox', `0 0 ${width} ${height}`);
+    threadSvg.setAttribute('viewBox', `0 0 ${width} ${height}`);
     let path = `M ${points[0].x.toFixed(1)} ${points[0].y.toFixed(1)}`;
     for (let index = 0; index < points.length; index++) {
       const previous = points[(index - 1 + points.length) % points.length];
@@ -61,6 +64,16 @@
       path += ` C ${first.x.toFixed(1)} ${first.y.toFixed(1)}, ${second.x.toFixed(1)} ${second.y.toFixed(1)}, ${next.x.toFixed(1)} ${next.y.toFixed(1)}`;
     }
     cord.setAttribute('d', `${path} Z`);
+    points.forEach((current, index) => {
+      const next = points[(index + 1) % points.length];
+      const dx = next.x - current.x;
+      const dy = next.y - current.y;
+      const distance = Math.max(1, Math.hypot(dx, dy));
+      const reach = 27;
+      const outsideX = current.x + dx / distance * reach;
+      const outsideY = current.y + dy / distance * reach;
+      threadEnds[current.state.index].setAttribute('d', `M ${outsideX.toFixed(1)} ${outsideY.toFixed(1)} L ${current.x.toFixed(1)} ${current.y.toFixed(1)}`);
+    });
   }
 
   function requestTick() {
