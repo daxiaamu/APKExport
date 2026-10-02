@@ -31,6 +31,37 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.spring
+import androidx.compose.animation.core.tween
+import androidx.compose.foundation.MutatePriority
+import androidx.compose.foundation.gestures.DragScope
+import androidx.compose.foundation.gestures.DraggableState
+import androidx.compose.foundation.gestures.Orientation
+import androidx.compose.foundation.gestures.draggable
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsPressedAsState
+import androidx.compose.foundation.layout.RowScope
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.offset
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.selection.selectable
+import androidx.compose.foundation.selection.selectableGroup
+import androidx.compose.runtime.derivedStateOf
+import androidx.compose.ui.draw.drawWithContent
+import androidx.compose.ui.geometry.CornerRadius
+import androidx.compose.ui.geometry.RoundRect
+import androidx.compose.ui.graphics.ClipOp
+import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.graphics.lerp
+import androidx.compose.ui.graphics.drawscope.clipPath
+import androidx.compose.ui.input.pointer.PointerEventPass
+import androidx.compose.ui.platform.LocalLayoutDirection
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.unit.IntOffset
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.rememberScrollState
@@ -51,6 +82,8 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.statusBars
+import androidx.compose.foundation.layout.navigationBars
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -58,7 +91,9 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.requiredHeight
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
@@ -84,7 +119,8 @@ import androidx.compose.material.icons.outlined.Refresh
 import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material.icons.outlined.Share
-import androidx.compose.material3.AlertDialog
+import cn.leftshine.apkexport.ui.GlassAlertDialog
+import cn.leftshine.apkexport.ui.LocalGlassHazeState
 import androidx.compose.material3.AssistChip
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Checkbox
@@ -94,20 +130,15 @@ import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material.icons.automirrored.outlined.HelpOutline
-import androidx.compose.material.icons.automirrored.outlined.OpenInNew
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.LinearProgressIndicator
-import androidx.compose.material3.NavigationBar
-import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Switch
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Snackbar
 import androidx.compose.material3.SnackbarHost
-import androidx.compose.material3.Snackbar
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -119,13 +150,12 @@ import androidx.compose.material3.dynamicDarkColorScheme
 import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.produceState
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
@@ -133,6 +163,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.clipToBounds
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -142,11 +173,9 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.platform.LocalWindowInfo
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
@@ -156,6 +185,7 @@ import androidx.core.content.ContextCompat
 import androidx.core.content.edit
 import androidx.core.graphics.createBitmap
 import androidx.core.net.toUri
+import androidx.compose.ui.unit.Dp
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewModelScope
@@ -166,12 +196,21 @@ import cn.leftshine.apkexport.update.AppUpdateManager
 import cn.leftshine.apkexport.utils.Settings
 import cn.leftshine.apkexport.update.UpdateAction
 import cn.leftshine.apkexport.update.UpdateDialogHost
+import dev.chrisbanes.haze.HazeProgressive
+import dev.chrisbanes.haze.HazeState
+import dev.chrisbanes.haze.HazeStyle
+import dev.chrisbanes.haze.HazeTint
+import dev.chrisbanes.haze.hazeEffect
+import dev.chrisbanes.haze.hazeSource
 import java.io.File
 import java.io.FileInputStream
 import java.text.Collator
 import java.util.Locale
 import java.util.concurrent.atomic.AtomicInteger
+import kotlin.math.abs
+import kotlin.math.roundToInt
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
@@ -642,7 +681,9 @@ private fun ApkExportApp(initialDestination: MainDestination, viewModel: MainVie
         else -> lightColorScheme(primary = Color(0xFF176B3A), secondary = Color(0xFF506353), surface = Color(0xFFF8FAF7), background = Color(0xFFF2F5F1))
     }
 
+    val hazeState = remember { HazeState() }
     MaterialTheme(colorScheme = colors) {
+        CompositionLocalProvider(LocalGlassHazeState provides hazeState) {
         MainScreen(
             state = state,
             snackbar = snackbar,
@@ -671,7 +712,7 @@ private fun ApkExportApp(initialDestination: MainDestination, viewModel: MainVie
             onMaintainerProject = { context.startActivity(Intent(Intent.ACTION_VIEW, "https://github.com/daxiaamu/APKExport".toUri())) },
         )
         if (batchExportRunning) {
-            AlertDialog(
+            GlassAlertDialog(
                 onDismissRequest = {},
                 title = { Text(stringResource(R.string.modern_batch_export)) },
                 text = {
@@ -694,6 +735,7 @@ private fun ApkExportApp(initialDestination: MainDestination, viewModel: MainVie
             )
         }
         UpdateDialogHost()
+        }
     }
 }
 
@@ -757,23 +799,51 @@ private fun MainScreen(
     val filterPreferences = remember { context.getSharedPreferences("app_filters", Context.MODE_PRIVATE) }
     val focusManager = LocalFocusManager.current
     val keyboardController = LocalSoftwareKeyboardController.current
-    val topAppBarScrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
-    var destination by remember(initialDestination) { mutableStateOf(initialDestination) }
-    val density = LocalDensity.current
-    val statusBarHeight = with(density) { WindowInsets.statusBars.getTop(this).toDp() }
-    val collapsibleContentHeight = if (destination == MainDestination.EXPORT) 96.dp else 48.dp
-    SideEffect {
-        val heightLimit = -with(density) { collapsibleContentHeight.toPx() }
-        topAppBarScrollBehavior.state.heightOffsetLimit = heightLimit
-        topAppBarScrollBehavior.state.heightOffset = topAppBarScrollBehavior.state.heightOffset.coerceIn(heightLimit, 0f)
+    val hazeState = checkNotNull(LocalGlassHazeState.current)
+    val glassBackground = MaterialTheme.colorScheme.background
+    val topGlassStyle = remember(glassBackground) {
+        HazeStyle(
+            backgroundColor = glassBackground,
+            tint = HazeTint(glassBackground.copy(alpha = 0.46f)),
+            blurRadius = 14.dp,
+            noiseFactor = 0f,
+        )
     }
-    val destinations = MainDestination.entries
-    val pagerState = rememberPagerState(initialPage = destination.ordinal, pageCount = { destinations.size })
+    val mainDestinations = remember { listOf(MainDestination.EXPORT, MainDestination.LOCAL_APK) }
+    val initialMainDestination = initialDestination.takeIf { it in mainDestinations } ?: MainDestination.EXPORT
+    var destination by remember(initialDestination) { mutableStateOf(initialDestination) }
+    var lastMainDestination by remember(initialDestination) { mutableStateOf(initialMainDestination) }
+    val topBarContentHeight = if (destination == MainDestination.EXPORT) 96.dp else 48.dp
+    val pagerState = rememberPagerState(
+        initialPage = mainDestinations.indexOf(initialMainDestination),
+        pageCount = { mainDestinations.size },
+    )
     val pagerScope = rememberCoroutineScope()
+    var pagerNavigationJob by remember { mutableStateOf<Job?>(null) }
+    fun navigateToMain(target: MainDestination) {
+        destination = target
+        lastMainDestination = target
+        pagerNavigationJob?.cancel()
+        pagerNavigationJob = pagerScope.launch {
+            pagerState.animateScrollToPage(mainDestinations.indexOf(target))
+        }
+    }
+    fun navigateToSettings() {
+        if (destination != MainDestination.SETTINGS) {
+            lastMainDestination = destination.takeIf { it in mainDestinations } ?: lastMainDestination
+            destination = MainDestination.SETTINGS
+            focusManager.clearFocus(force = true)
+            keyboardController?.hide()
+        }
+    }
     LaunchedEffect(pagerState.currentPage) {
-        destination = destinations[pagerState.currentPage]
-        topAppBarScrollBehavior.state.heightOffset = 0f
-        topAppBarScrollBehavior.state.contentOffset = 0f
+        if (destination != MainDestination.SETTINGS) {
+            val pageDestination = mainDestinations[pagerState.currentPage]
+            destination = pageDestination
+            lastMainDestination = pageDestination
+        }
+    }
+    LaunchedEffect(destination) {
         if (destination == MainDestination.LOCAL_APK) onEnterLocal()
     }
     val exportListState = rememberLazyGridState()
@@ -789,6 +859,7 @@ private fun MainScreen(
     var showSystemApps by rememberSaveable { mutableStateOf(filterPreferences.getBoolean("show_system_apps", false)) }
     BackHandler {
         when {
+            destination == MainDestination.SETTINGS -> navigateToMain(lastMainDestination)
             multiSelectMode -> {
                 multiSelectMode = false
                 selectedPackages = emptySet()
@@ -821,7 +892,7 @@ private fun MainScreen(
 
     if (showSortDialog) {
         val labels = listOf(R.string.modern_sort_name, R.string.modern_sort_package, R.string.modern_sort_size, R.string.modern_sort_installed, R.string.modern_sort_updated).map { stringResource(it) }
-        AlertDialog(
+        GlassAlertDialog(
             onDismissRequest = { showSortDialog = false },
             title = { Text(stringResource(R.string.modern_sort)) },
             text = { Column {
@@ -852,7 +923,7 @@ private fun MainScreen(
     }
 
     Scaffold(
-        modifier = Modifier.nestedScroll(topAppBarScrollBehavior.nestedScrollConnection).pointerInput(Unit) {
+        modifier = Modifier.pointerInput(Unit) {
             detectTapGestures(onTap = {
                 focusManager.clearFocus()
                 keyboardController?.hide()
@@ -871,190 +942,459 @@ private fun MainScreen(
             }
         },
         topBar = {
-            Column(Modifier.fillMaxWidth().background(MaterialTheme.colorScheme.background)) {
-            Spacer(Modifier.height(statusBarHeight))
-            Box(
-                modifier = Modifier.fillMaxWidth().height(collapsibleContentHeight * (1f - topAppBarScrollBehavior.state.collapsedFraction)).clipToBounds(),
-                contentAlignment = Alignment.BottomCenter,
+            FixedGlassTopBar(
+                haze = hazeState,
+                style = topGlassStyle,
+                contentHeight = topBarContentHeight,
             ) {
-            Column(Modifier.fillMaxWidth().requiredHeight(collapsibleContentHeight)) {
-            TopAppBar(
-                modifier = Modifier.requiredHeight(48.dp),
-                windowInsets = WindowInsets(0, 0, 0, 0),
-                title = {
-                    Text(when (destination) { MainDestination.EXPORT -> "APKExport"; MainDestination.LOCAL_APK -> stringResource(R.string.modern_tab_local_apk); MainDestination.SETTINGS -> stringResource(R.string.modern_tab_settings) }, fontWeight = FontWeight.Bold, letterSpacing = (-0.4).sp)
-                },
-                actions = {
-                    if (destination == MainDestination.EXPORT && multiSelectMode) {
-                        IconButton(onClick = {
-                            selectedPackages = if (selectedPackages.size == visibleApps.size) emptySet() else visibleApps.mapTo(mutableSetOf()) { it.packageName }
-                        }) { Icon(Icons.Outlined.DoneAll, stringResource(R.string.modern_select_all)) }
-                        IconButton(onClick = { onBatchShare(selectedApps) }, enabled = selectedApps.isNotEmpty()) { Icon(Icons.Outlined.Share, stringResource(R.string.modern_batch_share)) }
-                        IconButton(onClick = { onBatchExport(selectedApps) }, enabled = selectedApps.isNotEmpty()) { Icon(Icons.Outlined.Archive, stringResource(R.string.modern_batch_export)) }
-                        IconButton(onClick = { multiSelectMode = false; selectedPackages = emptySet() }) { Icon(Icons.Outlined.Close, stringResource(R.string.modern_exit_multi_select)) }
-                    } else if (destination == MainDestination.EXPORT) {
-                        IconButton(onClick = { showSortDialog = true }) { Icon(Icons.Outlined.SortByAlpha, stringResource(R.string.modern_sort)) }
-                        IconButton(onClick = { multiSelectMode = true }) { Icon(Icons.Outlined.Checklist, stringResource(R.string.modern_multi_select)) }
-                        IconButton(onClick = onRefresh) { Icon(Icons.Outlined.Refresh, stringResource(R.string.modern_refresh)) }
-                    }
-                    if (destination == MainDestination.LOCAL_APK) IconButton(onClick = onRefreshLocal, enabled = !state.localApksLoading) { Icon(Icons.Outlined.Refresh, stringResource(R.string.modern_refresh)) }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.background,
-                    scrolledContainerColor = MaterialTheme.colorScheme.background,
-                ),
-            )
-            if (destination == MainDestination.EXPORT) {
-                Row(
-                    modifier = Modifier.fillMaxWidth().requiredHeight(48.dp).padding(horizontal = 16.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    BasicTextField(
-                        value = query,
-                        onValueChange = { query = it },
-                        modifier = Modifier.weight(1f).height(48.dp).onFocusChanged { searchFocused = it.isFocused },
-                        singleLine = true,
-                        textStyle = MaterialTheme.typography.bodyLarge.copy(color = MaterialTheme.colorScheme.onSurface),
-                        cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),
-                        decorationBox = { innerTextField ->
-                            Surface(
-                                modifier = Modifier.fillMaxSize(),
-                                shape = CircleShape,
-                                color = MaterialTheme.colorScheme.surface,
-                                border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
-                            ) {
-                                Row(
-                                    modifier = Modifier.fillMaxSize().padding(start = 12.dp, end = 4.dp),
-                                    verticalAlignment = Alignment.CenterVertically,
+                Column(Modifier.fillMaxWidth().height(topBarContentHeight)) {
+                    TopAppBar(
+                        modifier = Modifier.requiredHeight(48.dp),
+                        windowInsets = WindowInsets(0, 0, 0, 0),
+                        title = {
+                            Text(
+                                when (destination) {
+                                    MainDestination.EXPORT -> "APKExport"
+                                    MainDestination.LOCAL_APK -> stringResource(R.string.modern_tab_local_apk)
+                                    MainDestination.SETTINGS -> stringResource(R.string.modern_tab_settings)
+                                },
+                                fontWeight = FontWeight.Bold,
+                                letterSpacing = (-0.4).sp,
+                            )
+                        },
+                        actions = {
+                            if (destination == MainDestination.EXPORT && multiSelectMode) {
+                                IconButton(onClick = {
+                                    selectedPackages = if (selectedPackages.size == visibleApps.size) emptySet() else visibleApps.mapTo(mutableSetOf()) { it.packageName }
+                                }) { Icon(Icons.Outlined.DoneAll, stringResource(R.string.modern_select_all)) }
+                                IconButton(onClick = { onBatchShare(selectedApps) }, enabled = selectedApps.isNotEmpty()) { Icon(Icons.Outlined.Share, stringResource(R.string.modern_batch_share)) }
+                                IconButton(onClick = { onBatchExport(selectedApps) }, enabled = selectedApps.isNotEmpty()) { Icon(Icons.Outlined.Archive, stringResource(R.string.modern_batch_export)) }
+                                IconButton(onClick = { multiSelectMode = false; selectedPackages = emptySet() }) { Icon(Icons.Outlined.Close, stringResource(R.string.modern_exit_multi_select)) }
+                            } else if (destination == MainDestination.EXPORT) {
+                                IconButton(onClick = { showSortDialog = true }) { Icon(Icons.Outlined.SortByAlpha, stringResource(R.string.modern_sort)) }
+                                IconButton(onClick = { multiSelectMode = true }) { Icon(Icons.Outlined.Checklist, stringResource(R.string.modern_multi_select)) }
+                                IconButton(onClick = onRefresh) { Icon(Icons.Outlined.Refresh, stringResource(R.string.modern_refresh)) }
+                            }
+                            if (destination == MainDestination.LOCAL_APK) {
+                                IconButton(onClick = onRefreshLocal, enabled = !state.localApksLoading) {
+                                    Icon(Icons.Outlined.Refresh, stringResource(R.string.modern_refresh))
+                                }
+                            }
+                            if (!(destination == MainDestination.EXPORT && multiSelectMode)) {
+                                IconButton(
+                                    onClick = { navigateToSettings() },
+                                    modifier = Modifier
+                                        .padding(end = 4.dp)
+                                        .clip(CircleShape)
+                                        .background(
+                                            if (destination == MainDestination.SETTINGS) MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.72f)
+                                            else Color.Transparent,
+                                        ),
                                 ) {
-                                    Icon(Icons.Outlined.Search, contentDescription = null, modifier = Modifier.size(20.dp), tint = MaterialTheme.colorScheme.onSurfaceVariant)
-                                    Box(Modifier.weight(1f).padding(horizontal = 10.dp), contentAlignment = Alignment.CenterStart) {
-                                        if (query.isEmpty()) Text(stringResource(R.string.modern_search_hint), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                                        innerTextField()
-                                    }
-                                    if (query.isNotEmpty()) {
-                                        IconButton(onClick = { query = "" }, modifier = Modifier.size(40.dp)) {
-                                            Icon(Icons.Outlined.Close, contentDescription = stringResource(R.string.modern_clear_search), modifier = Modifier.size(20.dp))
-                                        }
-                                    }
+                                    Icon(
+                                        Icons.Outlined.Settings,
+                                        contentDescription = stringResource(R.string.modern_tab_settings),
+                                        tint = if (destination == MainDestination.SETTINGS) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurfaceVariant,
+                                    )
                                 }
                             }
                         },
+                        colors = TopAppBarDefaults.topAppBarColors(
+                            containerColor = Color.Transparent,
+                            scrolledContainerColor = Color.Transparent,
+                        ),
                     )
-                    AnimatedVisibility(visible = searchFocused) {
-                        TextButton(
-                            onClick = {
-                                query = ""
-                                focusManager.clearFocus(force = true)
-                                keyboardController?.hide()
-                            },
-                        ) { Text(stringResource(R.string.modern_cancel)) }
+                    if (destination == MainDestination.EXPORT) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth().requiredHeight(48.dp).padding(horizontal = 16.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                        ) {
+                            BasicTextField(
+                                value = query,
+                                onValueChange = { query = it },
+                                modifier = Modifier.weight(1f).height(48.dp).onFocusChanged { searchFocused = it.isFocused },
+                                singleLine = true,
+                                textStyle = MaterialTheme.typography.bodyLarge.copy(color = MaterialTheme.colorScheme.onSurface),
+                                cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),
+                                decorationBox = { innerTextField ->
+                                    Surface(
+                                        modifier = Modifier.fillMaxSize(),
+                                        shape = CircleShape,
+                                        color = MaterialTheme.colorScheme.surface,
+                                        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
+                                    ) {
+                                        Row(
+                                            modifier = Modifier.fillMaxSize().padding(start = 12.dp, end = 4.dp),
+                                            verticalAlignment = Alignment.CenterVertically,
+                                        ) {
+                                            Icon(Icons.Outlined.Search, contentDescription = null, modifier = Modifier.size(20.dp), tint = MaterialTheme.colorScheme.onSurfaceVariant)
+                                            Box(Modifier.weight(1f).padding(horizontal = 10.dp), contentAlignment = Alignment.CenterStart) {
+                                                if (query.isEmpty()) Text(stringResource(R.string.modern_search_hint), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                                                innerTextField()
+                                            }
+                                            if (query.isNotEmpty()) {
+                                                IconButton(onClick = { query = "" }, modifier = Modifier.size(40.dp)) {
+                                                    Icon(Icons.Outlined.Close, contentDescription = stringResource(R.string.modern_clear_search), modifier = Modifier.size(20.dp))
+                                                }
+                                            }
+                                        }
+                                    }
+                                },
+                            )
+                            AnimatedVisibility(visible = searchFocused) {
+                                TextButton(
+                                    onClick = {
+                                        query = ""
+                                        focusManager.clearFocus(force = true)
+                                        keyboardController?.hide()
+                                    },
+                                ) { Text(stringResource(R.string.modern_cancel)) }
+                            }
+                        }
                     }
                 }
-                }
-            }
-            }
             }
         },
         bottomBar = {
-            NavigationBar {
-                NavigationBarItem(
-                    selected = destination == MainDestination.EXPORT,
-                    onClick = { pagerScope.launch { pagerState.animateScrollToPage(MainDestination.EXPORT.ordinal) } },
-                    icon = { Icon(Icons.Outlined.Archive, null) },
-                    label = { Text(stringResource(R.string.modern_tab_export)) },
+            FloatingNavigationIsland(
+                pager = pagerState,
+                haze = hazeState,
+                onDestinationSelected = { index -> navigateToMain(mainDestinations[index]) },
+            )
+        },    ) { contentPadding ->
+        val topContentPadding = contentPadding.calculateTopPadding()
+        val bottomContentPadding = contentPadding.calculateBottomPadding()
+        Box(Modifier.fillMaxSize().hazeSource(hazeState).background(MaterialTheme.colorScheme.background)) {
+            if (destination == MainDestination.SETTINGS) {
+                SettingsScreen(
+                    modifier = Modifier.fillMaxSize(),
+                    topContentPadding = topContentPadding,
+                    bottomContentPadding = bottomContentPadding,
+                    darkMode = darkMode,
+                    themeMode = themeMode,
+                    onThemeModeChange = onThemeModeChange,
+                    onCheckUpdate = onCheckUpdate,
+                    onHelp = onHelp,
+                    onBatchInstaller = onBatchInstaller,
+                    onOriginalProject = onOriginalProject,
+                    onMaintainerProject = onMaintainerProject,
                 )
-                NavigationBarItem(
-                    selected = destination == MainDestination.LOCAL_APK,
-                    onClick = { pagerScope.launch { pagerState.animateScrollToPage(MainDestination.LOCAL_APK.ordinal) } },
-                    icon = { Icon(Icons.Outlined.FolderOpen, null) },
-                    label = { Text(stringResource(R.string.modern_tab_local_apk)) },
-                )
-                NavigationBarItem(
-                    selected = destination == MainDestination.SETTINGS,
-                    onClick = { pagerScope.launch { pagerState.animateScrollToPage(MainDestination.SETTINGS.ordinal) } },
-                    icon = { Icon(Icons.Outlined.Settings, null) },
-                    label = { Text(stringResource(R.string.modern_tab_settings)) },
-                )
-            }
-        },
-    ) { contentPadding ->
-        HorizontalPager(state = pagerState, modifier = Modifier.fillMaxSize()) { page ->
-            when (destinations[page]) {
-                MainDestination.EXPORT -> {
-            Column(Modifier.fillMaxSize().padding(contentPadding)) {
-                Row(
-                    modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 4.dp),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    FilterChip(selected = showUserApps, onClick = {
-                        if (!showUserApps || showSystemApps) {
-                            showUserApps = !showUserApps
-                            filterPreferences.edit { putBoolean("show_user_apps", showUserApps) }
+            } else {
+                HorizontalPager(state = pagerState, modifier = Modifier.fillMaxSize()) { page ->
+                    when (mainDestinations[page]) {
+                        MainDestination.EXPORT -> {
+                            LazyVerticalGrid(
+                                columns = GridCells.Adaptive(320.dp),
+                                state = exportListState,
+                                modifier = Modifier.fillMaxSize(),
+                                contentPadding = PaddingValues(
+                                    start = 12.dp,
+                                    top = topContentPadding + 4.dp,
+                                    end = 12.dp,
+                                    bottom = bottomContentPadding + 8.dp,
+                                ),
+                                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                verticalArrangement = Arrangement.spacedBy(0.dp),
+                            ) {
+                                item(span = { GridItemSpan(maxLineSpan) }) {
+                                    Row(
+                                        modifier = Modifier.fillMaxWidth().padding(horizontal = 4.dp),
+                                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                        verticalAlignment = Alignment.CenterVertically,
+                                    ) {
+                                        FilterChip(selected = showUserApps, onClick = {
+                                            if (!showUserApps || showSystemApps) {
+                                                showUserApps = !showUserApps
+                                                filterPreferences.edit { putBoolean("show_user_apps", showUserApps) }
+                                            }
+                                        }, label = { Text(stringResource(R.string.modern_user_apps_count, userAppCount)) })
+                                        FilterChip(selected = showSystemApps, onClick = {
+                                            if (!showSystemApps || showUserApps) {
+                                                showSystemApps = !showSystemApps
+                                                filterPreferences.edit { putBoolean("show_system_apps", showSystemApps) }
+                                            }
+                                        }, label = { Text(stringResource(R.string.modern_system_apps_count, systemAppCount)) })
+                                    }
+                                }
+                                if (state.loading) {
+                                    item(span = { GridItemSpan(maxLineSpan) }) {
+                                        Box(Modifier.fillMaxWidth().height(72.dp), contentAlignment = Alignment.Center) {
+                                            CircularProgressIndicator(Modifier.size(28.dp), strokeWidth = 3.dp)
+                                        }
+                                    }
+                                }
+                                if (!state.loading && visibleApps.isEmpty()) {
+                                    item(span = { GridItemSpan(maxLineSpan) }) {
+                                        Box(Modifier.fillMaxWidth().height(240.dp), contentAlignment = Alignment.Center) {
+                                            Text(if (query.isBlank()) stringResource(R.string.modern_no_apps) else stringResource(R.string.modern_no_search_results, query), color = MaterialTheme.colorScheme.onSurfaceVariant)
+                                        }
+                                    }
+                                } else {
+                                    items(visibleApps, key = { it.packageName }) { app ->
+                                        AppArchiveCard(
+                                            app = app,
+                                            multiSelectMode = multiSelectMode,
+                                            selected = app.packageName in selectedPackages,
+                                            onToggleSelection = { selectedPackages = if (app.packageName in selectedPackages) selectedPackages - app.packageName else selectedPackages + app.packageName },
+                                            onExport = { onExport(app) },
+                                            onCustomExport = { name -> onCustomExport(app, name) },
+                                            onShare = { onShare(app) },
+                                            onCustomShare = { name -> onCustomShare(app, name) },
+                                        )
+                                    }
+                                }
+                            }
                         }
-                    }, label = { Text(stringResource(R.string.modern_user_apps_count, userAppCount)) })
-                    FilterChip(selected = showSystemApps, onClick = {
-                        if (!showSystemApps || showUserApps) {
-                            showSystemApps = !showSystemApps
-                            filterPreferences.edit { putBoolean("show_system_apps", showSystemApps) }
-                        }
-                    }, label = { Text(stringResource(R.string.modern_system_apps_count, systemAppCount)) })
-                }
-                AnimatedVisibility(visible = state.loading) {
-                    Box(Modifier.fillMaxWidth().height(72.dp), contentAlignment = Alignment.Center) {
-                        CircularProgressIndicator(Modifier.size(28.dp), strokeWidth = 3.dp)
-                    }
-                }
-                if (!state.loading && visibleApps.isEmpty()) {
-                    Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                        Text(if (query.isBlank()) stringResource(R.string.modern_no_apps) else stringResource(R.string.modern_no_search_results, query), color = MaterialTheme.colorScheme.onSurfaceVariant)
-                    }
-                } else {
-                    LazyVerticalGrid(
-                        columns = GridCells.Adaptive(320.dp),
-                        state = exportListState,
-                        contentPadding = PaddingValues(horizontal = 12.dp),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp),
-                        verticalArrangement = Arrangement.spacedBy(0.dp),
-                    ) {
-                        items(visibleApps, key = { it.packageName }) { app ->
-                            AppArchiveCard(
-                                app = app,
-                                multiSelectMode = multiSelectMode,
-                                selected = app.packageName in selectedPackages,
-                                onToggleSelection = { selectedPackages = if (app.packageName in selectedPackages) selectedPackages - app.packageName else selectedPackages + app.packageName },
-                                onExport = { onExport(app) },
-                                onCustomExport = { name -> onCustomExport(app, name) },
-                                onShare = { onShare(app) },
-                                onCustomShare = { name -> onCustomShare(app, name) },
+                        MainDestination.LOCAL_APK -> {
+                            LocalApkScreen(
+                                files = state.localApks,
+                                loading = state.localApksLoading,
+                                listState = localListState,
+                                modifier = Modifier.fillMaxSize(),
+                                topContentPadding = topContentPadding,
+                                bottomContentPadding = bottomContentPadding,
+                                onInstall = { installLocalApk(context, it) },
+                                onShare = { shareLocalApk(context, it) },
+                                onDelete = onDeleteLocal,
+                                onRename = onRenameLocal,
                             )
                         }
+                        MainDestination.SETTINGS -> Unit
                     }
-                }
-            }
-                }
-                MainDestination.LOCAL_APK -> {
-            LocalApkScreen(files = state.localApks, loading = state.localApksLoading, listState = localListState, modifier = Modifier.fillMaxSize().padding(contentPadding), onInstall = { installLocalApk(context, it) }, onShare = { shareLocalApk(context, it) }, onDelete = onDeleteLocal, onRename = onRenameLocal)
-                }
-                MainDestination.SETTINGS -> {
-                    SettingsScreen(
-                modifier = Modifier.fillMaxSize().padding(contentPadding),
-                darkMode = darkMode,
-                themeMode = themeMode,
-                onThemeModeChange = onThemeModeChange,
-                onCheckUpdate = onCheckUpdate,
-                onHelp = onHelp,
-                onBatchInstaller = onBatchInstaller,
-                onOriginalProject = onOriginalProject,
-                onMaintainerProject = onMaintainerProject,
-                    )
                 }
             }
         }
     }
 }
 
+@Composable
+private fun FixedGlassTopBar(
+    haze: HazeState,
+    style: HazeStyle,
+    contentHeight: Dp,
+    content: @Composable () -> Unit,
+) {
+    val density = LocalDensity.current
+    val statusBarHeight = with(density) { WindowInsets.statusBars.getTop(this).toDp() }
+    val topInset = statusBarHeight + contentHeight
+    val fadeStart = with(density) { (topInset - 20.dp).toPx() }
+    val fadeEnd = with(density) { (topInset + 24.dp).toPx() }
+    Box(Modifier.fillMaxWidth().height(topInset + 24.dp)) {
+        Box(
+            Modifier
+                .matchParentSize()
+                .hazeEffect(haze, style = style) {
+                    progressive = HazeProgressive.verticalGradient(
+                        startY = fadeStart,
+                        startIntensity = 1f,
+                        endY = fadeEnd,
+                        endIntensity = 0f,
+                        easing = FastOutSlowInEasing,
+                    )
+                },
+        )
+        Column(Modifier.fillMaxWidth().height(topInset)) {
+            Spacer(Modifier.height(statusBarHeight))
+            content()
+        }
+    }
+}
+
+private val DockInset = 7.dp
+private val DockItemWidth = 118.dp
+private val DockItemHeight = 50.dp
+
+private class CapsuleDragState(
+    private val pager: androidx.compose.foundation.pager.PagerState,
+    private val travelPx: Float,
+) : DraggableState {
+    private val scale: Float
+        get() = (pager.layoutInfo.pageSize + pager.layoutInfo.pageSpacing) / travelPx
+
+    override suspend fun drag(dragPriority: MutatePriority, block: suspend DragScope.() -> Unit) {
+        pager.scroll(dragPriority) {
+            val pagerScrollScope = this
+            block(object : DragScope {
+                override fun dragBy(pixels: Float) {
+                    pagerScrollScope.scrollBy(pixels * scale)
+                }
+            })
+        }
+    }
+
+    override fun dispatchRawDelta(delta: Float) {
+        pager.dispatchRawDelta(delta * scale)
+    }
+}
+
+@Composable
+private fun FloatingNavigationIsland(
+    pager: androidx.compose.foundation.pager.PagerState,
+    haze: HazeState,
+    onDestinationSelected: (Int) -> Unit,
+) {
+    val density = LocalDensity.current
+    val travel = with(density) { DockItemWidth.toPx() }
+    val flingThreshold = with(density) { 180.dp.toPx() }
+    val dragState = remember(pager, travel) { CapsuleDragState(pager, travel) }
+    val rtl = LocalLayoutDirection.current == LayoutDirection.Rtl
+    val progress by remember(pager) {
+        derivedStateOf {
+            (pager.currentPage + pager.currentPageOffsetFraction).coerceIn(0f, 1f)
+        }
+    }
+    val colors = MaterialTheme.colorScheme
+    val interactions = remember { MutableInteractionSource() }
+    val tabPressed by interactions.collectIsPressedAsState()
+    var pointerPressed by remember { mutableStateOf(false) }
+    val pressed = pointerPressed || tabPressed
+    val islandScale by animateFloatAsState(
+        targetValue = if (pressed) 0.96f else 1f,
+        animationSpec = if (pressed) {
+            tween(durationMillis = 260, easing = FastOutSlowInEasing)
+        } else {
+            spring(dampingRatio = 0.86f, stiffness = 300f)
+        },
+        label = "dockPress",
+    )
+    val labels = listOf(
+        stringResource(R.string.modern_tab_export),
+        stringResource(R.string.modern_tab_local_apk),
+    )
+    val icons = listOf(Icons.Outlined.Archive, Icons.Outlined.FolderOpen)
+
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .windowInsetsPadding(WindowInsets.navigationBars)
+            .padding(vertical = 10.dp),
+        contentAlignment = Alignment.Center,
+    ) {
+        Box(
+            Modifier
+                .width(DockItemWidth * 2 + DockInset * 2)
+                .pointerInput(Unit) {
+                    try {
+                        awaitPointerEventScope {
+                            while (true) {
+                                pointerPressed = awaitPointerEvent(PointerEventPass.Initial).changes.any { it.pressed }
+                            }
+                        }
+                    } finally {
+                        pointerPressed = false
+                    }
+                }
+                .graphicsLayer {
+                    scaleX = islandScale
+                    scaleY = islandScale
+                }
+                .shadow(4.dp, CircleShape)
+                .clip(CircleShape),
+        ) {
+            DockGlassBackdrop(
+                haze = haze,
+                progress = progress,
+                rtl = rtl,
+                modifier = Modifier.matchParentSize(),
+            )
+            Box(
+                Modifier
+                    .padding(DockInset)
+                    .height(DockItemHeight)
+                    .selectableGroup()
+                    .draggable(
+                        state = dragState,
+                        orientation = Orientation.Horizontal,
+                        reverseDirection = rtl,
+                        startDragImmediately = false,
+                        onDragStopped = { velocity ->
+                            val position = pager.currentPage + pager.currentPageOffsetFraction
+                            val target = if (abs(velocity) > flingThreshold) {
+                                if (velocity > 0) 1 else 0
+                            } else {
+                                position.roundToInt().coerceIn(0, 1)
+                            }
+                            pager.animateScrollToPage(target)
+                        },
+                    ),
+            ) {
+                Row(Modifier.fillMaxSize()) {
+                    labels.forEachIndexed { index, label ->
+                        val selection = if (index == 0) 1f - progress else progress
+                        val contentColor = lerp(colors.onSurfaceVariant, colors.onPrimaryContainer, selection)
+                        Row(
+                            modifier = Modifier
+                                .weight(1f)
+                                .fillMaxHeight()
+                                .clip(CircleShape)
+                                .selectable(
+                                    selected = pager.currentPage == index,
+                                    role = Role.Tab,
+                                    interactionSource = interactions,
+                                    indication = null,
+                                    onClick = { onDestinationSelected(index) },
+                                ),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally),
+                        ) {
+                            Icon(icons[index], contentDescription = null, modifier = Modifier.size(20.dp), tint = contentColor)
+                            Text(
+                                text = label,
+                                style = MaterialTheme.typography.labelLarge,
+                                color = contentColor,
+                                fontWeight = if (selection > 0.5f) FontWeight.SemiBold else FontWeight.Medium,
+                                maxLines = 1,
+                            )
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun DockGlassBackdrop(
+    haze: HazeState,
+    progress: Float,
+    rtl: Boolean,
+    modifier: Modifier = Modifier,
+) {
+    val colors = MaterialTheme.colorScheme
+    val capsuleTint = lerp(colors.primaryContainer, colors.primary, 0.30f)
+    val capsulePath = remember { Path() }
+    val style = HazeStyle(
+        backgroundColor = colors.background,
+        tint = HazeTint(Color.Transparent),
+        blurRadius = 26.dp,
+        noiseFactor = 0f,
+    )
+    Box(
+        modifier
+            .drawWithContent {
+                drawContent()
+                val inset = DockInset.roundToPx().toFloat()
+                val travel = DockItemWidth.toPx()
+                val offset = (progress.coerceIn(0f, 1f) * travel).roundToInt().toFloat()
+                val left = inset + if (rtl) travel - offset else offset
+                capsulePath.reset()
+                capsulePath.addRoundRect(
+                    RoundRect(
+                        left = left,
+                        top = inset,
+                        right = left + DockItemWidth.roundToPx(),
+                        bottom = size.height - inset,
+                        cornerRadius = CornerRadius((size.height - 2 * inset) / 2),
+                    ),
+                )
+                clipPath(capsulePath, ClipOp.Difference) {
+                    drawRect(colors.background.copy(alpha = 0.46f))
+                }
+                drawPath(capsulePath, capsuleTint.copy(alpha = 0.46f))
+            }
+            .hazeEffect(haze, style = style),
+    )
+}
 private fun localPackageMime(name: String): String = if (name.endsWith(".apk", true)) ApkRepository.APK_MIME else "application/zip"
 
 private fun installLocalApk(context: Context, file: LocalApkFile) = LocalPackageInstaller.install(context, file)
@@ -1074,6 +1414,8 @@ private fun LocalApkScreen(
     loading: Boolean,
     listState: androidx.compose.foundation.lazy.grid.LazyGridState,
     modifier: Modifier,
+    topContentPadding: Dp,
+    bottomContentPadding: Dp,
     onInstall: (LocalApkFile) -> Unit,
     onShare: (LocalApkFile) -> Unit,
     onDelete: (LocalApkFile) -> Unit,
@@ -1085,7 +1427,7 @@ private fun LocalApkScreen(
     var renameText by remember { mutableStateOf("") }
 
     actionFile?.let { file ->
-        AlertDialog(
+        GlassAlertDialog(
             onDismissRequest = { actionFile = null },
             title = { Text(file.name, style = MaterialTheme.typography.titleMedium) },
             text = { Column {
@@ -1105,7 +1447,7 @@ private fun LocalApkScreen(
         )
     }
     renameFile?.let { file ->
-        AlertDialog(
+        GlassAlertDialog(
             onDismissRequest = { renameFile = null },
             title = { Text(stringResource(R.string.modern_rename)) },
             text = { OutlinedTextField(value = renameText, onValueChange = { renameText = it }, singleLine = true, suffix = { Text(".${file.name.substringAfterLast('.', "apk")}") }) },
@@ -1114,44 +1456,61 @@ private fun LocalApkScreen(
         )
     }
 
-    Column(modifier) {
-        AnimatedVisibility(visible = loading) {
-            Box(Modifier.fillMaxWidth().height(72.dp), contentAlignment = Alignment.Center) {
-                CircularProgressIndicator(Modifier.size(28.dp), strokeWidth = 3.dp)
-            }
+    if (!loading && files.isEmpty()) {
+        Box(
+            modifier = modifier.padding(top = topContentPadding, bottom = bottomContentPadding),
+            contentAlignment = Alignment.Center,
+        ) {
+            Text(stringResource(R.string.modern_no_local_apks), color = MaterialTheme.colorScheme.onSurfaceVariant)
         }
-        if (!loading && files.isEmpty()) {
-            Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) { Text(stringResource(R.string.modern_no_local_apks), color = MaterialTheme.colorScheme.onSurfaceVariant) }
-        } else {
-            LazyVerticalGrid(columns = GridCells.Adaptive(320.dp), state = listState, modifier = Modifier.weight(1f), contentPadding = PaddingValues(horizontal = 12.dp)) {
-        items(files, key = { it.uri.toString() }) { file ->
-            Column {
-                Row(
-                    modifier = Modifier.fillMaxWidth().height(64.dp).clickable { actionFile = file },
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    val packageIcon by produceState<Bitmap?>(initialValue = null, file.uri, file.modifiedAt) {
-                        value = LocalPackageIconLoader.load(context, file)
-                    }
-                    Box(Modifier.padding(start = 4.dp).size(36.dp), contentAlignment = Alignment.Center) {
-                        packageIcon?.let { Image(it.asImageBitmap(), null, Modifier.fillMaxSize()) }
-                            ?: Icon(Icons.Outlined.Archive, null, Modifier.size(32.dp), tint = MaterialTheme.colorScheme.primary)
-                    }
-                    Column(Modifier.weight(1f).padding(horizontal = 10.dp)) {
-                        Text(file.name, style = MaterialTheme.typography.titleSmall, maxLines = 1, overflow = TextOverflow.Ellipsis)
-                        Text("${formatBytes(file.size)} · ${formatModifiedAt(file.modifiedAt)}", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant, maxLines = 1, overflow = TextOverflow.Ellipsis)
+    } else {
+        LazyVerticalGrid(
+            columns = GridCells.Adaptive(320.dp),
+            state = listState,
+            modifier = modifier,
+            contentPadding = PaddingValues(
+                start = 12.dp,
+                top = topContentPadding,
+                end = 12.dp,
+                bottom = bottomContentPadding + 8.dp,
+            ),
+        ) {
+            if (loading) {
+                item(span = { GridItemSpan(maxLineSpan) }) {
+                    Box(Modifier.fillMaxWidth().height(72.dp), contentAlignment = Alignment.Center) {
+                        CircularProgressIndicator(Modifier.size(28.dp), strokeWidth = 3.dp)
                     }
                 }
-                HorizontalDivider(Modifier.padding(start = 50.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.6f))
             }
+            items(files, key = { it.uri.toString() }) { file ->
+                Column {
+                    Row(
+                        modifier = Modifier.fillMaxWidth().height(64.dp).clickable { actionFile = file },
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        val packageIcon by produceState<Bitmap?>(initialValue = null, file.uri, file.modifiedAt) {
+                            value = LocalPackageIconLoader.load(context, file)
+                        }
+                        Box(Modifier.padding(start = 4.dp).size(36.dp), contentAlignment = Alignment.Center) {
+                            packageIcon?.let { Image(it.asImageBitmap(), null, Modifier.fillMaxSize()) }
+                                ?: Icon(Icons.Outlined.Archive, null, Modifier.size(32.dp), tint = MaterialTheme.colorScheme.primary)
+                        }
+                        Column(Modifier.weight(1f).padding(horizontal = 10.dp)) {
+                            Text(file.name, style = MaterialTheme.typography.titleSmall, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                            Text("${formatBytes(file.size)} · ${formatModifiedAt(file.modifiedAt)}", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                        }
+                    }
+                    HorizontalDivider(Modifier.padding(start = 50.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.6f))
+                }
             }
         }
     }
 }
-}
 @Composable
 private fun SettingsScreen(
     modifier: Modifier,
+    topContentPadding: Dp,
+    bottomContentPadding: Dp,
     darkMode: Boolean,
     themeMode: ThemeMode,
     onThemeModeChange: (ThemeMode) -> Unit,
@@ -1179,7 +1538,7 @@ private fun SettingsScreen(
         ThemeMode.DARK to stringResource(R.string.modern_theme_dark),
     )
     if (showThemeDialog) {
-        AlertDialog(
+        GlassAlertDialog(
             onDismissRequest = { showThemeDialog = false },
             title = { Text(stringResource(R.string.modern_dark_mode), style = MaterialTheme.typography.titleMedium) },
             text = { Column {
@@ -1198,7 +1557,7 @@ private fun SettingsScreen(
         )
     }
     if (showFilenameDialog) {
-        AlertDialog(
+        GlassAlertDialog(
             onDismissRequest = { showFilenameDialog = false },
             title = { Text(stringResource(R.string.modern_custom_filename_format), style = MaterialTheme.typography.titleMedium) },
             text = { Column {
@@ -1210,7 +1569,7 @@ private fun SettingsScreen(
             dismissButton = { TextButton(onClick = { showFilenameDialog = false }) { Text(stringResource(R.string.modern_cancel)) } },
         )
     }
-    Column(modifier.verticalScroll(rememberScrollState())) {
+    Column(modifier.verticalScroll(rememberScrollState()).padding(top = topContentPadding, bottom = bottomContentPadding + 8.dp)) {
         SettingsGroup(stringResource(R.string.modern_group_general)) {
             SettingsItem(
                 title = stringResource(R.string.modern_dark_mode),
@@ -1389,7 +1748,7 @@ private fun AppArchiveCard(
         Toast.makeText(context, R.string.modern_copied, Toast.LENGTH_SHORT).show()
     }
     if (showCopyMenu) {
-        AlertDialog(
+        GlassAlertDialog(
             onDismissRequest = { showCopyMenu = false },
             title = { Text(app.label, style = MaterialTheme.typography.titleMedium) },
             text = { Column {
@@ -1403,7 +1762,7 @@ private fun AppArchiveCard(
         )
     }
     if (showCustomNameDialog) {
-        AlertDialog(
+        GlassAlertDialog(
             onDismissRequest = { showCustomNameDialog = false },
             title = { Text(stringResource(R.string.input_new_name), style = MaterialTheme.typography.titleMedium) },
             text = {
@@ -1446,7 +1805,7 @@ private fun AppArchiveCard(
         )
     }
     if (showActionMenu) {
-        AlertDialog(
+        GlassAlertDialog(
             onDismissRequest = { showActionMenu = false },
             title = { Text(stringResource(R.string.modern_choose_action), style = MaterialTheme.typography.titleMedium) },
             text = { Column {

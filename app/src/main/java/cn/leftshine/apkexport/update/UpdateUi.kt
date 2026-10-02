@@ -15,7 +15,7 @@ import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.SystemUpdate
-import androidx.compose.material3.AlertDialog
+import cn.leftshine.apkexport.ui.GlassAlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
@@ -73,7 +73,7 @@ internal fun UpdateDialogHost() {
     val progress = state.progress
     val maxHeight = with(LocalDensity.current) { LocalWindowInfo.current.containerSize.height.toDp() } * 0.60f
 
-    AlertDialog(
+    GlassAlertDialog(
         onDismissRequest = { if (!forced && !downloading) AppUpdateManager.ignore() },
         title = { Text(stringResource(if (forced) R.string.update_required else R.string.update_available)) },
         text = {
