@@ -1,0 +1,23 @@
+{
+  "schemaVersion": 1,
+  "channel": "stable",
+  "versionCode": 300,
+  "versionName": "3.0",
+  "publishedAt": "2026-10-02T17:26:36Z",
+  "changelog": "APKExport 3.0 正式版\n\n主要更新：\n- 使用 Jetpack Compose 与 Material 3 重构现代界面\n- 固定玻璃顶栏与底部悬浮岛，支持拖动胶囊实时切换页面\n- 导出与本地安装包页面支持左右滑动切换\n- 优化应用列表密度、排序、多选、批量导出及分享\n- 扫描并安装 APK、APKS、APKM、XAPK 等本地安装包\n- 支持自定义导出位置与文件名格式\n- 接入应用内更新，并完善简体中文、繁体中文和英文资源\n- 更新及其他弹窗统一使用局部玻璃效果",
+  "maxForcedVersionCode": 0,
+  "policyRevision": 1,
+  "policyReason": "Initial stable in-app update policy",
+  "url": "https://ghfast.top/https://github.com/daxiaamu/APKExport/releases/download/v3.0/APKExport-v3.0.apk",
+  "urls": [
+    "https://ghfast.top/https://github.com/daxiaamu/APKExport/releases/download/v3.0/APKExport-v3.0.apk",
+    "https://gh-proxy.com/https://github.com/daxiaamu/APKExport/releases/download/v3.0/APKExport-v3.0.apk",
+    "https://ghproxy.net/https://github.com/daxiaamu/APKExport/releases/download/v3.0/APKExport-v3.0.apk",
+    "https://gh.llkk.cc/https://github.com/daxiaamu/APKExport/releases/download/v3.0/APKExport-v3.0.apk",
+    "https://gh.monlor.com/https://github.com/daxiaamu/APKExport/releases/download/v3.0/APKExport-v3.0.apk",
+    "https://github.com/daxiaamu/APKExport/releases/download/v3.0/APKExport-v3.0.apk"
+  ],
+  "sha256": "ab815bfa53d55658e01ca605b2b024a0eba9ffd358533d3c8fc9804a98a7c172",
+  "size": 16560623,
+  "releaseUrl": "https://github.com/daxiaamu/APKExport/releases/tag/v3.0"
+}
