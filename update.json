@@ -4,7 +4,7 @@
   "versionCode": 300,
   "versionName": "3.0",
   "publishedAt": "2026-10-02T17:26:36Z",
-  "changelog": "APKExport 3.0 正式版\n\n主要更新：\n- 使用 Jetpack Compose 与 Material 3 重构现代界面\n- 固定玻璃顶栏与底部悬浮岛，支持拖动胶囊实时切换页面\n- 导出与本地安装包页面支持左右滑动切换\n- 优化应用列表密度、排序、多选、批量导出及分享\n- 扫描并安装 APK、APKS、APKM、XAPK 等本地安装包\n- 支持自定义导出位置与文件名格式\n- 接入应用内更新，并完善简体中文、繁体中文和英文资源\n- 更新及其他弹窗统一使用局部玻璃效果",
+  "changelog": "APKExport 3.0 正式版\n\n主要更新：\n- 使用 Jetpack Compose 与 Material 3 重构现代界面\n- 固定玻璃顶栏与底部悬浮岛，支持拖动胶囊实时切换页面\n- 导出与本地安装包页面支持左右滑动切换\n- 优化应用列表密度、排序、多选、批量导出及分享\n- 扫描并安装 APK、APKS、APKM、XAPK 等本地安装包\n- 支持自定义导出位置与文件名格式\n- 接入应用内更新，并完善简体中文、繁体中文和英文资源\n- 更新及其他弹窗统一使用局部玻璃效果\n\n推广：Android 开心版软件下载\nhttps://pan.quark.cn/s/14e8a6044f77",
   "maxForcedVersionCode": 0,
   "policyRevision": 1,
   "policyReason": "Initial stable in-app update policy",

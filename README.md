@@ -51,7 +51,7 @@ Release 签名信息从本地 `.signing/keystore.properties` 读取，签名文�
 
 ## 相关项目
 
-- [APK 批量安装器](https://optool.daxiaamu.com/super_adb)：PC 端批量安装应用，支持 APK、XAPK、APKM、APKS 等多种格式
+- [Android 开心版软件下载](https://pan.quark.cn/s/14e8a6044f77)
 
 ## 致谢
 
